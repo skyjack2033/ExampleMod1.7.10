@@ -5,13 +5,13 @@ import appeng.api.config.Actionable;
 import appeng.api.config.PowerMultiplier;
 import appeng.api.networking.energy.IEnergyGrid;
 import appeng.api.storage.IMEMonitor;
-import appeng.api.storage.channels.IItemStorageChannel;
 import appeng.api.storage.data.IAEItemStack;
 import appeng.api.storage.data.IItemList;
 import appeng.me.GridAccessException;
 import appeng.me.helpers.AENetworkProxy;
 import appeng.tile.inventory.AppEngInternalInventory;
 import appeng.util.Platform;
+import appeng.util.item.AEItemStack;
 import appeng.util.item.ItemList;
 import github.kasuminova.mmce.client.util.ItemStackUtils;
 import github.kasuminova.mmce.common.helper.IDynamicPatternInfo;
@@ -84,7 +84,6 @@ public class EFabricatorController extends EPartController<EFabricatorPart> {
     protected final List<IFluidHandler> coolantInputHandlers = new ArrayList<>();
     protected final List<IFluidHandler> coolantOutputHandlers = new ArrayList<>();
 
-    protected final IItemStorageChannel itemChannel = AEApi.instance().storage().getStorageChannel(IItemStorageChannel.class);
     protected IItemList outputBuffer = new ItemList();
 
     protected BlockEFabricatorController parentController = null;
@@ -114,7 +113,7 @@ public class EFabricatorController extends EPartController<EFabricatorPart> {
     public EFabricatorController(final ResourceLocation machineRegistryName) {
         this();
         this.parentMachine = MachineRegistry.getRegistry().getMachine(machineRegistryName);
-        this.parentController = BlockEFabricatorController.REGISTRY.get(new ResourceLocation(ECOAEExtension.MOD_ID, machineRegistryName.getPath()));
+        this.parentController = BlockEFabricatorController.REGISTRY.get(new ResourceLocation(ECOAEExtension.MOD_ID, machineRegistryName.getResourcePath()));
     }
 
     public EFabricatorController() {
@@ -230,10 +229,11 @@ public class EFabricatorController extends EPartController<EFabricatorPart> {
     protected void clearOutputBuffer() {
         try {
             AENetworkProxy proxy = this.channel.getProxy();
-            IMEMonitor inv = proxy.getStorage().getInventory(itemChannel);
+            IEnergyGrid energy = proxy.getEnergy();
+            IMEMonitor<IAEItemStack> inv = proxy.getStorage().getItemInventory();
             for (final Object obj : outputBuffer) {
                 IAEItemStack stack = (IAEItemStack) obj;
-                IAEItemStack notInserted = Platform.poweredInsert(proxy.getEnergy(), inv, stack.copy(), this.channel.getSource());
+                IAEItemStack notInserted = Platform.poweredInsert(energy, inv, stack.copy(), (appeng.api.networking.security.BaseActionSource) this.channel.getSource());
                 if (notInserted != null) {
                     stack.setStackSize(notInserted.getStackSize());
                 } else {
@@ -249,22 +249,39 @@ public class EFabricatorController extends EPartController<EFabricatorPart> {
         super.updateComponents();
         IDynamicPatternInfo workers = getDynamicPattern("workers");
         this.length = workers != null ? workers.getSize() : 0;
-        this.foundComponents.values().forEach(component -> {
-            if (component.providedComponent() instanceof IFluidHandler handler) {
-                switch (component.getComponent().ioType) {
-                    case INPUT: coolantInputHandlers.add(handler); break;
-                    case OUTPUT: coolantOutputHandlers.add(handler); break;
-                }
-            }
-        });
+        registerCoolantHandlers();
         updateParallelism();
         updateWorkDelay();
     }
 
+    @SuppressWarnings("unchecked")
+    private void registerCoolantHandlers() {
+        for (final Object val : this.foundComponents.values()) {
+            try {
+                java.lang.reflect.Method providedMethod = val.getClass().getMethod("providedComponent");
+                Object provided = providedMethod.invoke(val);
+                if (!(provided instanceof IFluidHandler)) continue;
+                IFluidHandler handler = (IFluidHandler) provided;
+
+                java.lang.reflect.Method getCompMethod = val.getClass().getMethod("getComponent");
+                Object compDef = getCompMethod.invoke(val);
+                Object ioType = compDef.getClass().getField("ioType").get(compDef);
+                String ioTypeName = ioType.toString();
+
+                if ("INPUT".equals(ioTypeName)) {
+                    coolantInputHandlers.add(handler);
+                } else if ("OUTPUT".equals(ioTypeName)) {
+                    coolantOutputHandlers.add(handler);
+                }
+            } catch (Exception ignored) {
+            }
+        }
+    }
+
     @Override
     protected void onAddPart(final EFabricatorPart part) {
-        if (part instanceof EFabricatorMEChannel channelc) {
-            this.channel = channelc;
+        if (part instanceof EFabricatorMEChannel) {
+            this.channel = (EFabricatorMEChannel) part;
         }
     }
 
@@ -340,7 +357,7 @@ public class EFabricatorController extends EPartController<EFabricatorPart> {
             AppEngInternalInventory patternInv = patternBus.getPatterns();
             for (int i = 0; i < patternInv.getSlots(); i++) {
                 if (patternInv.getStackInSlot(i).stackSize <= 0) {
-                    patternInv.setStackInSlot(i, ItemUtils.copyStackWithSize(patternStack, 1));
+                    patternInv.setInventorySlotContents(i, ItemUtils.copyStackWithSize(patternStack, 1));
                     return true;
                 }
             }
@@ -603,8 +620,10 @@ public class EFabricatorController extends EPartController<EFabricatorPart> {
         outputBuffer = new ItemList();
         NBTTagList list = compound.getTagList("outputBuffer", Constants.NBT.TAG_COMPOUND);
         IntStream.range(0, list.tagCount())
-                .mapToObj(i -> itemChannel.createStack(ItemStackUtils.readNBTOversize(list.getCompoundTagAt(i))))
-                .forEach(obj -> outputBuffer.add((IAEStack) obj));
+                .mapToObj(i -> AEItemStack.create(ItemStackUtils.readNBTOversize(list.getCompoundTagAt(i))))
+                .forEach(obj -> {
+                    if (obj != null) outputBuffer.add(obj);
+                });
 
         loaded = prevLoaded;
 
@@ -628,7 +647,9 @@ public class EFabricatorController extends EPartController<EFabricatorPart> {
         synchronized (outputBuffer) {
             for (final Object obj : outputBuffer) {
                 IAEItemStack stack = (IAEItemStack) obj;
-                list.appendTag(ItemStackUtils.writeNBTOversize(stack.getCachedItemStack(stack.getStackSize())));
+                ItemStack displayStack = stack.getItemStack().copy();
+                displayStack.stackSize = (int) Math.min(stack.getStackSize(), Integer.MAX_VALUE);
+                list.appendTag(ItemStackUtils.writeNBTOversize(displayStack));
             }
         }
         compound.setTag("outputBuffer", list);
@@ -641,7 +662,7 @@ public class EFabricatorController extends EPartController<EFabricatorPart> {
             ResourceLocation rl = new ResourceLocation(compound.getString("parentMachine"));
             parentMachine = MachineRegistry.getRegistry().getMachine(rl);
             if (parentMachine != null) {
-                this.parentController = BlockEFabricatorController.REGISTRY.get(new ResourceLocation(ECOAEExtension.MOD_ID, parentMachine.getRegistryName().getPath()));
+                this.parentController = BlockEFabricatorController.REGISTRY.get(new ResourceLocation(ECOAEExtension.MOD_ID, parentMachine.getMachineName()));
             } else {
                 ModularMachinery.log.info("Couldn't find machine named " + rl + " for controller at " + getPos());
             }

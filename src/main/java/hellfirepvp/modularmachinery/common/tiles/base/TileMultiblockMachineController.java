@@ -1,9 +1,11 @@
 package hellfirepvp.modularmachinery.common.tiles.base;
 
 import github.kasuminova.ecoaeextension.common.util.BlockPos;
+import github.kasuminova.mmce.common.helper.IDynamicPatternInfo;
 import github.kasuminova.mmce.common.util.TimeRecorder;
 import hellfirepvp.modularmachinery.common.machine.DynamicMachine;
 import hellfirepvp.modularmachinery.common.util.MachinePattern;
+import net.minecraft.block.state.IBlockState;
 import net.minecraftforge.common.util.ForgeDirection;
 
 import java.util.HashMap;
@@ -61,6 +63,20 @@ public class TileMultiblockMachineController extends TileEntitySynchronized {
 
     public void setStructureFormed(boolean formed) {
         this.structureFormed = formed;
+    }
+
+    public void markNoUpdateSync() {
+        markDirty();
+    }
+
+    public IDynamicPatternInfo getDynamicPattern(String name) {
+        return null;
+    }
+
+    public void notifyStructureFormedState(boolean formed) {
+        if (worldObj == null || getPos() == null) return;
+        IBlockState state = worldObj.getBlockState(getPos());
+        // Stub for 1.7.10 port
     }
 
     protected void updateComponents() {

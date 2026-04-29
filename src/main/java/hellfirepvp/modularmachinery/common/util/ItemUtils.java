@@ -13,4 +13,11 @@ public final class ItemUtils {
         }
         return stack.getItemDamage();
     }
+
+    public static ItemStack copyStackWithSize(ItemStack stack, int size) {
+        if (stack == null) return null;
+        ItemStack copy = stack.copy();
+        copy.stackSize = size;
+        return copy;
+    }
 }

@@ -3,6 +3,7 @@ package github.kasuminova.mmce.client.gui.widget.container;
 import github.kasuminova.mmce.client.gui.util.RenderPos;
 import github.kasuminova.mmce.client.gui.widget.base.DynamicWidget;
 import github.kasuminova.mmce.client.gui.widget.base.WidgetGui;
+import github.kasuminova.mmce.client.gui.widget.event.GuiEvent;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -25,6 +26,13 @@ public abstract class WidgetContainer extends DynamicWidget {
             if (widget.isVisible()) {
                 widget.render(renderPos, widgetGui);
             }
+        }
+    }
+
+    @Override
+    public void onGuiEvent(GuiEvent event) {
+        for (DynamicWidget widget : widgets) {
+            widget.onGuiEvent(event);
         }
     }
 

@@ -1,0 +1,30 @@
+{
+  "permissions": {
+    "allow": [
+      "WebFetch(domain:github.com)",
+      "Bash(git clone *)",
+      "Bash(xargs grep *)",
+      "Bash(sed 's/.*import //')",
+      "Bash(read dir *)",
+      "Bash(grep -rn 'case.*:\\\\\\\\s*break' I:/p1/src/main/java --include='*.java')",
+      "Bash(java -version)",
+      "Read(//c/Program Files/Java/**)",
+      "Read(//c/Program Files \\(x86\\)/**)",
+      "Bash(export JAVA_HOME=\"C:/Program Files/Java/OpenJDK-24\")",
+      "Bash(export PATH=\"$JAVA_HOME/bin:$PATH\")",
+      "Bash(C:/Program Files/Java/OpenJDK-24/bin/java *)",
+      "Bash(\"C:/Program Files/Java/OpenJDK-24/bin/java\" -Dhttp.proxyHost=127.0.0.1 -Dhttp.proxyPort=10808 -Dhttps.proxyHost=127.0.0.1 -Dhttps.proxyPort=10808 -jar gradle/wrapper/gradle-wrapper.jar --version)",
+      "Bash(\"C:/Program Files/Java/OpenJDK-24/bin/java\" -DsocksProxyHost=127.0.0.1 -DsocksProxyPort=10808 -jar gradle/wrapper/gradle-wrapper.jar --version)",
+      "Bash(curl -x socks5://127.0.0.1:10808 -s --connect-timeout 10 https://services.gradle.org)",
+      "Bash(curl -x socks5://127.0.0.1:10808 -L -o \"C:/Users/Administrator/.gradle/wrapper/dists/gradle-9.3.1-bin/23ovyewtku6u96viwx3xl3oks/gradle-9.3.1-bin.zip\" \"https://services.gradle.org/distributions/gradle-9.3.1-bin.zip\")",
+      "Bash(\"C:/Program Files/Java/OpenJDK-24/bin/java\" -DsocksProxyHost=127.0.0.1 -DsocksProxyPort=10808 -Dorg.gradle.app=gradle-8.11.1 -jar gradle/wrapper/gradle-wrapper.jar compileJava)",
+      "Bash(\"C:/Program Files/Java/OpenJDK-24/bin/java\" -DsocksProxyHost=127.0.0.1 -DsocksProxyPort=10808 -jar gradle/wrapper/gradle-wrapper.jar compileJava)",
+      "Bash(curl -x socks5://127.0.0.1:10808 -L -s --connect-timeout 15 \"https://jdk.java.net/25/\")",
+      "Bash(curl -x socks5://127.0.0.1:10808 -L -s --connect-timeout 15 \"https://api.adoptium.net/v3/assets/latest/25/hotspot\")",
+      "Bash(\"C:/Program Files/Microsoft/jdk-21.0.5.11-hotspot/bin/java\" -DsocksProxyHost=127.0.0.1 -DsocksProxyPort=10808 -jar gradle/wrapper/gradle-wrapper.jar compileJava)",
+      "Bash(curl -x socks5://127.0.0.1:10808 -L -s \"https://api.adoptium.net/v3/assets/latest/25/hotspot?vendor=eclipse\")",
+      "Bash(curl -x socks5://127.0.0.1:10808 -L -s \"https://api.adoptium.net/v3/assets/latest/25/hotspot\")",
+      "Bash(python3 -c \"import sys,json; assets=json.load\\(sys.stdin\\); [print\\(a['binary']['package']['link']\\) for a in assets if 'windows' in a['binary']['os'] and 'x64' in a['binary']['architecture'] and 'jdk' in a['binary']['image_type']]\")"
+    ]
+  }
+}

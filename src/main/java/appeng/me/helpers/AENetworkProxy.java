@@ -3,6 +3,8 @@ package appeng.me.helpers;
 import appeng.api.networking.GridFlags;
 import appeng.api.networking.IGrid;
 import appeng.api.networking.IGridNode;
+import appeng.api.networking.energy.IEnergyGrid;
+import appeng.api.networking.storage.IStorageGrid;
 import net.minecraft.item.ItemStack;
 import net.minecraft.nbt.NBTTagCompound;
 
@@ -50,5 +52,15 @@ public class AENetworkProxy {
     }
 
     public void setVisualRepresentation(ItemStack is) {
+    }
+
+    public IEnergyGrid getEnergy() {
+        IGrid g = getGrid();
+        return g != null ? g.getCache(IEnergyGrid.class) : null;
+    }
+
+    public IStorageGrid getStorage() {
+        IGrid g = getGrid();
+        return g != null ? g.getCache(IStorageGrid.class) : null;
     }
 }

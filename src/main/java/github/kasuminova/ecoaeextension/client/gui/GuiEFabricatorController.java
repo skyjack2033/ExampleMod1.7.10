@@ -10,10 +10,10 @@ import github.kasuminova.ecoaeextension.common.container.ContainerEFabricatorCon
 import github.kasuminova.ecoaeextension.common.container.data.EFabricatorData;
 import github.kasuminova.ecoaeextension.common.tile.ecotech.efabricator.EFabricatorController;
 import lombok.Getter;
-import net.minecraft.client.gui.Gui;
-
+import net.minecraft.client.renderer.Tessellator;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.util.ResourceLocation;
+import org.lwjgl.opengl.GL11;
 
 public class GuiEFabricatorController extends GuiContainerDynamic<ContainerEFabricatorController> {
 
@@ -44,14 +44,26 @@ public class GuiEFabricatorController extends GuiContainerDynamic<ContainerEFabr
 
     @Override
     protected void drawGuiContainerBackgroundLayer(final float partialTicks, final int mouseX, final int mouseY) {
-        GlStateManager.color(1.0F, 1.0F, 1.0F);
+        GL11.glColor4f(1.0F, 1.0F, 1.0F, 1.0F);
         this.mc.getTextureManager().bindTexture(TEXTURES_BACKGROUND_DARK);
         final int x = (this.width - this.xSize) / 2;
         final int y = (this.height - this.ySize) / 2;
-        Gui.drawModalRectWithCustomSizedTexture(x, y, 0, 0, 256, 202, 256, 256);
+        drawModalRectWithCustomSizedTexture(x, y, 0, 0, 256, 202, 256, 256);
         this.mc.getTextureManager().bindTexture(TEXTURES_INVENTORY);
-        Gui.drawModalRectWithCustomSizedTexture(x + 17, y + 118, 1, 120, 162, 76, 256, 256);
+        drawModalRectWithCustomSizedTexture(x + 17, y + 118, 1, 120, 162, 76, 256, 256);
         super.drawGuiContainerBackgroundLayer(partialTicks, mouseX, mouseY);
+    }
+
+    private static void drawModalRectWithCustomSizedTexture(final int x, final int y, final int u, final int v, final int width, final int height, final int textureWidth, final int textureHeight) {
+        final float fw = 1.0F / textureWidth;
+        final float fh = 1.0F / textureHeight;
+        Tessellator tessellator = Tessellator.instance;
+        tessellator.startDrawingQuads();
+        tessellator.addVertexWithUV(x, y + height, 0.0D, u * fw, (v + height) * fh);
+        tessellator.addVertexWithUV(x + width, y + height, 0.0D, (u + width) * fw, (v + height) * fh);
+        tessellator.addVertexWithUV(x + width, y, 0.0D, (u + width) * fw, v * fh);
+        tessellator.addVertexWithUV(x, y, 0.0D, u * fw, v * fh);
+        tessellator.draw();
     }
 
     public void onDataUpdate(final EFabricatorData data) {

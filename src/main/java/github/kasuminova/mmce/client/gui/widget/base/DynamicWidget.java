@@ -8,10 +8,34 @@ public abstract class DynamicWidget {
     private int width;
     private int height;
     private boolean visible = true;
+    private int absX;
+    private int absY;
 
     public abstract void render(RenderPos renderPos, WidgetGui widgetGui);
 
     public void onGuiEvent(GuiEvent event) {
+    }
+
+    public int getAbsX() {
+        return absX;
+    }
+
+    public void setAbsX(int absX) {
+        this.absX = absX;
+    }
+
+    public int getAbsY() {
+        return absY;
+    }
+
+    public void setAbsY(int absY) {
+        this.absY = absY;
+    }
+
+    public DynamicWidget setAbsXY(int x, int y) {
+        this.absX = x;
+        this.absY = y;
+        return this;
     }
 
     public int getWidth() {

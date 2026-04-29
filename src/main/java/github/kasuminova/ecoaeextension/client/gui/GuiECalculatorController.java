@@ -17,6 +17,7 @@ import lombok.Getter;
 
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.util.ResourceLocation;
+import org.lwjgl.opengl.GL11;
 
 public class GuiECalculatorController extends GuiContainerDynamic<ContainerECalculatorController> {
 
@@ -42,7 +43,7 @@ public class GuiECalculatorController extends GuiContainerDynamic<ContainerECalc
 
     @Override
     protected void drawGuiContainerBackgroundLayer(final float partialTicks, final int mouseX, final int mouseY) {
-        GlStateManager.color(1.0F, 1.0F, 1.0F);
+        GL11.glColor4f(1.0F, 1.0F, 1.0F, 1.0F);
         final int x = (this.width - this.xSize) / 2;
         final int y = (this.height - this.ySize) / 2;
         BACKGROUND.render(new RenderPos(x, y), this);
