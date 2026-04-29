@@ -4,10 +4,9 @@ import github.kasuminova.ecoaeextension.ECOAEExtension;
 import github.kasuminova.ecoaeextension.common.core.CreativeTabNovaEng;
 import github.kasuminova.ecoaeextension.common.tile.ecotech.estorage.EStorageMEChannel;
 
+import net.minecraft.block.Block;
 import net.minecraft.block.material.Material;
-import net.minecraft.block.state.IBlockState;
 import net.minecraft.tileentity.TileEntity;
-import net.minecraft.util.ResourceLocation;
 import net.minecraft.world.World;
 
 import javax.annotation.Nonnull;
@@ -18,21 +17,14 @@ public class BlockEStorageMEChannel extends BlockEStoragePart {
     public static final BlockEStorageMEChannel INSTANCE = new BlockEStorageMEChannel();
 
     public BlockEStorageMEChannel() {
-        super(Material.IRON);
+        super(Material.iron);
         this.setHardness(5.0F);
         this.setResistance(10.0F);
-        this.setSoundType(SoundType.METAL);
+        this.setStepSound(Block.soundTypeMetal);
         this.setHarvestLevel("pickaxe", 1);
         this.setCreativeTab(CreativeTabNovaEng.INSTANCE);
-        this.setDefaultState(this.blockState.getBaseState());
-        this.setRegistryName(new ResourceLocation(ECOAEExtension.MOD_ID, "estorage_me_channel"));
-        this.setTranslationKey(ECOAEExtension.MOD_ID + '.' + "estorage_me_channel");
-    }
-
-    @Nullable
-    @Override
-    public TileEntity createTileEntity(@Nonnull final World world, @Nonnull final IBlockState state) {
-        return new EStorageMEChannel();
+        this.setDefaultState(this.stateContainer.getBaseState());
+        this.setBlockName(ECOAEExtension.MOD_ID + '.' + "estorage_me_channel");
     }
 
     @Nullable

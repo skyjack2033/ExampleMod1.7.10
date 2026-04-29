@@ -4,6 +4,7 @@ import appeng.api.storage.ICellInventoryHandler;
 import appeng.api.storage.StorageChannel;
 import appeng.api.storage.data.IAEStack;
 import appeng.tile.inventory.AppEngCellInventory;
+import appeng.util.helpers.ItemHandlerUtil;
 import github.kasuminova.ecoaeextension.ECOAEExtension;
 import github.kasuminova.ecoaeextension.common.block.ecotech.estorage.prop.DriveStatus;
 import github.kasuminova.ecoaeextension.common.block.ecotech.estorage.prop.DriveStorageCapacity;
@@ -14,21 +15,19 @@ import github.kasuminova.ecoaeextension.common.core.CreativeTabNovaEng;
 import github.kasuminova.ecoaeextension.common.estorage.EStorageCellHandler;
 import github.kasuminova.ecoaeextension.common.item.estorage.EStorageCell;
 import github.kasuminova.ecoaeextension.common.tile.ecotech.estorage.EStorageCellDrive;
+import github.kasuminova.ecoaeextension.common.util.EnumFacingCompat;
 
+import net.minecraft.block.Block;
 import net.minecraft.block.material.Material;
 import net.minecraft.block.state.BlockStateContainer;
 import net.minecraft.block.state.IBlockState;
 import net.minecraft.entity.EntityLivingBase;
 import net.minecraft.item.ItemStack;
 import net.minecraft.tileentity.TileEntity;
-import net.minecraftforge.common.util.ForgeDirection;
-import github.kasuminova.ecoaeextension.common.util.EnumFacingCompat;
-import net.minecraft.util.ResourceLocation;
-
-import github.kasuminova.ecoaeextension.common.util.BlockPos;
-import github.kasuminova.ecoaeextension.common.util.EnumFacingCompat;
+import net.minecraft.util.MathHelper;
 import net.minecraft.world.IBlockAccess;
 import net.minecraft.world.World;
+import net.minecraftforge.common.util.ForgeDirection;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
@@ -40,27 +39,20 @@ public class BlockEStorageCellDrive extends BlockEStoragePart {
     public static final BlockEStorageCellDrive INSTANCE = new BlockEStorageCellDrive();
 
     protected BlockEStorageCellDrive() {
-        super(Material.IRON);
+        super(Material.iron);
         this.setHardness(20.0F);
         this.setResistance(2000.0F);
-        this.setSoundType(SoundType.METAL);
+        this.setStepSound(Block.soundTypeMetal);
         this.setHarvestLevel("pickaxe", 2);
         this.setCreativeTab(CreativeTabNovaEng.INSTANCE);
-        this.setDefaultState(this.blockState.getBaseState()
+        this.setDefaultState(this.stateContainer.getBaseState()
                 .withProperty(FacingProp.HORIZONTALS, ForgeDirection.NORTH)
                 .withProperty(DriveStorageType.STORAGE_TYPE, DriveStorageType.EMPTY)
                 .withProperty(DriveStorageLevel.STORAGE_LEVEL, DriveStorageLevel.EMPTY)
                 .withProperty(DriveStorageCapacity.STORAGE_CAPACITY, DriveStorageCapacity.EMPTY)
                 .withProperty(DriveStatus.STATUS, DriveStatus.IDLE)
         );
-        this.setRegistryName(new ResourceLocation(ECOAEExtension.MOD_ID, "estorage_cell_drive"));
-        this.setTranslationKey(ECOAEExtension.MOD_ID + '.' + "estorage_cell_drive");
-    }
-
-    @Nullable
-    @Override
-    public TileEntity createTileEntity(@Nonnull final World world, @Nonnull final IBlockState state) {
-        return new EStorageCellDrive();
+        this.setBlockName(ECOAEExtension.MOD_ID + '.' + "estorage_cell_drive");
     }
 
     @Nullable
@@ -70,35 +62,42 @@ public class BlockEStorageCellDrive extends BlockEStoragePart {
     }
 
     @Override
-    public void breakBlock(World worldIn, @Nonnull BlockPos pos, @Nonnull IBlockState state) {
-        TileEntity te = worldIn.getTileEntity(pos.getX(), pos.getY(), pos.getZ());
-        if (te instanceof EStorageCellDrive drive) {
+    public void breakBlock(final World worldIn, final int x, final int y, final int z, final Block block, final int meta) {
+        TileEntity te = worldIn.getTileEntity(x, y, z);
+        if (te instanceof EStorageCellDrive) {
+            EStorageCellDrive drive = (EStorageCellDrive) te;
             AppEngCellInventory inv = drive.getDriveInv();
             for (int i = 0; i < inv.getSlots(); i++) {
                 ItemStack stack = inv.getStackInSlot(i);
                 if (stack != null && stack.stackSize > 0) {
-                    spawnAsEntity(worldIn, pos, stack);
-                    inv.setStackInSlot(i, null);
+                    dropBlockAsItem(worldIn, x, y, z, stack);
+                    ItemHandlerUtil.setStackInSlot(inv, i, null);
                 }
             }
         }
 
-        super.breakBlock(worldIn, pos, state);
+        super.breakBlock(worldIn, x, y, z, block, meta);
     }
 
     @Override
-    public int getLightValue(@Nonnull final IBlockState state) {
-        return state.getValue(DriveStorageType.STORAGE_TYPE) == DriveStorageType.EMPTY ? 2 : 6;
+    public int getLightValue(@Nonnull final IBlockAccess world, final int x, final int y, final int z) {
+        TileEntity te = world.getTileEntity(x, y, z);
+        if (te instanceof EStorageCellDrive) {
+            EStorageCellDrive drive = (EStorageCellDrive) te;
+            AppEngCellInventory driveInv = drive.getDriveInv();
+            ItemStack stack = driveInv.getStackInSlot(0);
+            return (stack != null && stack.stackSize > 0) ? 6 : 2;
+        }
+        return 2;
     }
 
-    @Nonnull
-    @Override
     @SuppressWarnings("rawtypes")
-    public IBlockState getActualState(@Nonnull final IBlockState state, @Nonnull final IBlockAccess world, @Nonnull final BlockPos pos) {
-        TileEntity te = world.getTileEntity(pos.getX(), pos.getY(), pos.getZ());
-        if (!(te instanceof EStorageCellDrive drive)) {
+    public IBlockState getActualState(@Nonnull final IBlockState state, @Nonnull final IBlockAccess world, final int x, final int y, final int z) {
+        TileEntity te = world.getTileEntity(x, y, z);
+        if (!(te instanceof EStorageCellDrive)) {
             return state;
         }
+        EStorageCellDrive drive = (EStorageCellDrive) te;
         AppEngCellInventory driveInv = drive.getDriveInv();
         ItemStack stack = driveInv.getStackInSlot(0);
         if (stack.stackSize <= 0) {
@@ -135,20 +134,23 @@ public class BlockEStorageCellDrive extends BlockEStoragePart {
                 .withProperty(DriveStorageCapacity.STORAGE_CAPACITY, EStorageCellDrive.getCapacity(cellInventory));
     }
 
-    @Nonnull
-    @Override
     public IBlockState getStateFromMeta(final int meta) {
         return getDefaultState().withProperty(FacingProp.HORIZONTALS, EnumFacingCompat.byHorizontalIndex(meta));
     }
 
-    @Override
     public int getMetaFromState(@Nonnull final IBlockState state) {
-        return state.getValue(FacingProp.HORIZONTALS).getHorizontalIndex();
+        return EnumFacingCompat.toHorizontalIndex(state.getValue(FacingProp.HORIZONTALS));
     }
 
-    @Nonnull
-    public IBlockState getStateForPlacement(@Nonnull World worldIn, @Nonnull BlockPos pos, @Nonnull ForgeDirection facing, float hitX, float hitY, float hitZ, int meta, EntityLivingBase placer) {
-        return this.getDefaultState().withProperty(FacingProp.HORIZONTALS, placer.getHorizontalFacing().getOpposite());
+    @Override
+    public void onBlockPlacedBy(@Nonnull final World world,
+                                final int x, final int y, final int z,
+                                @Nonnull final EntityLivingBase placer,
+                                @Nonnull final ItemStack stack)
+    {
+        int dir = MathHelper.floor_double((double) (placer.rotationYaw * 4.0F / 360.0F) + 0.5D) & 3;
+        dir = (dir + 2) & 3;
+        world.setBlockMetadataWithNotify(x, y, z, dir, 2);
     }
 
     @Nonnull

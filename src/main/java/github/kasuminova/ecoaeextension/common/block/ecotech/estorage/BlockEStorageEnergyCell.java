@@ -2,24 +2,17 @@ package github.kasuminova.ecoaeextension.common.block.ecotech.estorage;
 
 import github.kasuminova.ecoaeextension.ECOAEExtension;
 import github.kasuminova.ecoaeextension.common.block.ecotech.estorage.prop.EnergyCellStatus;
-import github.kasuminova.ecoaeextension.common.block.prop.FacingProp;
 import github.kasuminova.ecoaeextension.common.core.CreativeTabNovaEng;
 import github.kasuminova.ecoaeextension.common.tile.ecotech.estorage.EStorageEnergyCell;
 
+import net.minecraft.block.Block;
 import net.minecraft.block.material.Material;
-import net.minecraft.block.state.BlockStateContainer;
-import net.minecraft.block.state.IBlockState;
 import net.minecraft.entity.EntityLivingBase;
 import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
 import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.tileentity.TileEntity;
-import net.minecraftforge.common.util.ForgeDirection;
-import github.kasuminova.ecoaeextension.common.util.EnumFacingCompat;
-import net.minecraft.util.ResourceLocation;
-
-import github.kasuminova.ecoaeextension.common.util.BlockPos;
-import github.kasuminova.ecoaeextension.common.util.EnumFacingCompat;
+import net.minecraft.util.MathHelper;
 import net.minecraft.world.IBlockAccess;
 import net.minecraft.world.World;
 
@@ -35,25 +28,14 @@ public class BlockEStorageEnergyCell extends BlockEStoragePart {
     protected final double maxEnergyStore;
 
     protected BlockEStorageEnergyCell(final String level, double maxEnergyStore) {
-        super(Material.IRON);
+        super(Material.iron);
         this.setHardness(20.0F);
         this.setResistance(2000.0F);
-        this.setSoundType(SoundType.METAL);
+        this.setStepSound(Block.soundTypeMetal);
         this.setHarvestLevel("pickaxe", 2);
         this.setCreativeTab(CreativeTabNovaEng.INSTANCE);
-        this.setDefaultState(this.blockState.getBaseState()
-                .withProperty(FacingProp.HORIZONTALS, ForgeDirection.NORTH)
-                .withProperty(EnergyCellStatus.STATUS, EnergyCellStatus.EMPTY)
-        );
-        this.setRegistryName(new ResourceLocation(ECOAEExtension.MOD_ID, "estorage_energy_cell_" + level));
-        this.setTranslationKey(ECOAEExtension.MOD_ID + '.' + "estorage_energy_cell_" + level);
+        this.setBlockName(ECOAEExtension.MOD_ID + '.' + "estorage_energy_cell_" + level);
         this.maxEnergyStore = maxEnergyStore;
-    }
-
-    @Nullable
-    @Override
-    public TileEntity createTileEntity(@Nonnull final World world, @Nonnull final IBlockState state) {
-        return new EStorageEnergyCell(maxEnergyStore);
     }
 
     @Nullable
@@ -63,82 +45,61 @@ public class BlockEStorageEnergyCell extends BlockEStoragePart {
     }
 
     @Override
-    public int getLightValue(@Nonnull final IBlockState state) {
-        return state.getValue(EnergyCellStatus.STATUS).ordinal() * 2;
+    public int getLightValue(@Nonnull final IBlockAccess world, final int x, final int y, final int z) {
+        TileEntity te = world.getTileEntity(x, y, z);
+        if (te instanceof EStorageEnergyCell) {
+            EStorageEnergyCell cell = (EStorageEnergyCell) te;
+            return EStorageEnergyCell.getStatusFromFillFactor(cell.getFillFactor()).ordinal() * 2;
+        }
+        return 0;
     }
 
     @Override
-    public void dropBlockAsItemWithChance(@Nonnull final World worldIn, @Nonnull final BlockPos pos, @Nonnull final IBlockState state, final float chance, final int fortune) {
+    public void dropBlockAsItemWithChance(@Nonnull final World worldIn, final int x, final int y, final int z, final int meta, final float chance, final int fortune) {
     }
 
     @Override
-    public void breakBlock(final World world,
-                           @Nonnull final BlockPos pos,
-                           @Nonnull final IBlockState state)
-    {
+    public void breakBlock(final World world, final int x, final int y, final int z, final Block block, final int meta) {
         ItemStack dropped = new ItemStack(Item.getItemFromBlock(this));
         if (dropped.stackSize <= 0) {
-            super.dropBlockAsItemWithChance(world, pos, state, 1.0F, 0);
-            world.removeTileEntity(pos);
+            dropBlockAsItem(world, x, y, z, dropped);
+            world.removeTileEntity(x, y, z);
             return;
         }
-        if (!(world.getTileEntity(pos.getX(), pos.getY(), pos.getZ()) instanceof EStorageEnergyCell)) {
-            super.dropBlockAsItemWithChance(world, pos, state, 1.0F, 0);
-            world.removeTileEntity(pos);
+        TileEntity te = world.getTileEntity(x, y, z);
+        if (!(te instanceof EStorageEnergyCell)) {
+            dropBlockAsItem(world, x, y, z, dropped);
+            world.removeTileEntity(x, y, z);
             return;
         }
+        EStorageEnergyCell cell = (EStorageEnergyCell) te;
 
         NBTTagCompound tag = new NBTTagCompound();
         cell.writeCustomNBT(tag);
         cell.setEnergyStored(0D);
         dropped.setTagCompound(tag);
-        spawnAsEntity(world, pos, dropped);
-        world.removeTileEntity(pos);
-    }
-
-    @Nonnull
-    public IBlockState getStateForPlacement(@Nonnull World worldIn, @Nonnull BlockPos pos, @Nonnull ForgeDirection facing, float hitX, float hitY, float hitZ, int meta, EntityLivingBase placer) {
-        return this.getDefaultState().withProperty(FacingProp.HORIZONTALS, placer.getHorizontalFacing().getOpposite());
-    }
-
-    public int getMetaFromState(IBlockState state) {
-        return state.getValue(FacingProp.HORIZONTALS).getHorizontalIndex();
-    }
-
-    @Nonnull
-    public IBlockState getStateFromMeta(int meta) {
-        return this.getDefaultState().withProperty(FacingProp.HORIZONTALS, EnumFacingCompat.byHorizontalIndex(meta));
-    }
-
-    @Nonnull
-    @Override
-    public IBlockState getActualState(@Nonnull final IBlockState state, @Nonnull final IBlockAccess world, @Nonnull final BlockPos pos) {
-        if (world.getTileEntity(pos.getX(), pos.getY(), pos.getZ()) instanceof EStorageEnergyCell cell) {
-            return state.withProperty(EnergyCellStatus.STATUS, EStorageEnergyCell.getStatusFromFillFactor(cell.getFillFactor()));
-        }
-        return super.getActualState(state, world, pos);
+        dropBlockAsItem(world, x, y, z, dropped);
+        world.removeTileEntity(x, y, z);
     }
 
     @Override
     public void onBlockPlacedBy(@Nonnull final World world,
-                                @Nonnull final BlockPos pos,
-                                @Nonnull final IBlockState state,
+                                final int x, final int y, final int z,
                                 @Nonnull final EntityLivingBase placer,
                                 @Nonnull final ItemStack stack)
     {
-        super.onBlockPlacedBy(world, pos, state, placer, stack);
+        int dir = MathHelper.floor_double((double) (placer.rotationYaw * 4.0F / 360.0F) + 0.5D) & 3;
+        dir = (dir + 2) & 3;
+        world.setBlockMetadataWithNotify(x, y, z, dir, 2);
+
         NBTTagCompound tag = stack.getTagCompound();
         if (tag != null && tag.hasKey("energyStored") && tag.hasKey("maxEnergyStore")) {
-            if (world.getTileEntity(pos.getX(), pos.getY(), pos.getZ()) instanceof EStorageEnergyCell) {
+            TileEntity te = world.getTileEntity(x, y, z);
+            if (te instanceof EStorageEnergyCell) {
+                EStorageEnergyCell cell = (EStorageEnergyCell) te;
                 cell.readCustomNBT(tag);
             }
         }
-    }
-
-    @Nonnull
-    @Override
-    protected BlockStateContainer createBlockState() {
-        return new BlockStateContainer(this, FacingProp.HORIZONTALS, EnergyCellStatus.STATUS);
     }
 
 }

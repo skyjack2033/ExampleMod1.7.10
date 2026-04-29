@@ -1,7 +1,6 @@
 package github.kasuminova.ecoaeextension.common.block.ecotech.ecalculator;
 
 import github.kasuminova.ecoaeextension.ECOAEExtension;
-import net.minecraft.util.ResourceLocation;
 
 public class BlockECalculatorThreadCoreHyper extends BlockECalculatorThreadCore {
 
@@ -11,7 +10,6 @@ public class BlockECalculatorThreadCoreHyper extends BlockECalculatorThreadCore 
 
     protected BlockECalculatorThreadCoreHyper(final String level, final int threads, final int hyperThreads) {
         super(
-                new ResourceLocation(ECOAEExtension.MOD_ID, "ecalculator_thread_core_hyper_" + level),
                 ECOAEExtension.MOD_ID + '.' + "ecalculator_thread_core_hyper_" + level,
                 threads, hyperThreads
         );

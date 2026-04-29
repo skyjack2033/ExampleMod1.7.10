@@ -3,13 +3,10 @@ package github.kasuminova.ecoaeextension.common.item;
 import appeng.me.helpers.AENetworkProxy;
 import appeng.me.helpers.IGridProxyable;
 import net.minecraft.block.Block;
-import net.minecraft.block.state.IBlockState;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.item.ItemBlock;
 import net.minecraft.item.ItemStack;
 import net.minecraft.tileentity.TileEntity;
-import net.minecraftforge.common.util.ForgeDirection;
-import github.kasuminova.ecoaeextension.common.util.BlockPos;
 import net.minecraft.world.World;
 
 import javax.annotation.Nonnull;
@@ -21,21 +18,30 @@ public class ItemBlockME extends ItemBlock {
     }
 
     @Override
-    public boolean placeBlockAt(@Nonnull final ItemStack stack,
-                                @Nonnull final EntityPlayer player,
-                                @Nonnull final World world,
-                                @Nonnull final BlockPos pos,
-                                @Nonnull final ForgeDirection side,
-                                final float hitX,
-                                final float hitY,
-                                final float hitZ,
-                                @Nonnull final IBlockState newState)
+    public boolean onItemUse(@Nonnull final ItemStack stack,
+                             @Nonnull final EntityPlayer player,
+                             @Nonnull final World world,
+                             int x, int y, int z,
+                             int side,
+                             float hitX, float hitY, float hitZ)
     {
-        if (super.placeBlockAt(stack, player, world, pos, side, hitX, hitY, hitZ, newState)) {
-            TileEntity tile = world.getTileEntity(pos.getX(), pos.getY(), pos.getZ());
+        if (super.onItemUse(stack, player, world, x, y, z, side, hitX, hitY, hitZ)) {
+            TileEntity tile = world.getTileEntity(x, y, z);
+            if (tile == null) {
+                // Try the adjacent block (the one just placed)
+                switch (side) {
+                    case 0: y--; break;
+                    case 1: y++; break;
+                    case 2: z--; break;
+                    case 3: z++; break;
+                    case 4: x--; break;
+                    case 5: x++; break;
+                }
+                tile = world.getTileEntity(x, y, z);
+            }
             if (tile instanceof IGridProxyable) {
                 AENetworkProxy proxy = ((IGridProxyable) tile).getProxy();
-                proxy.setOwner(player);
+                proxy.setOwner(player.getCommandSenderName());
             }
             return true;
         }

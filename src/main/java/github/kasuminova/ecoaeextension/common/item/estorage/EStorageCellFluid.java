@@ -2,11 +2,10 @@ package github.kasuminova.ecoaeextension.common.item.estorage;
 
 import appeng.api.storage.StorageChannel;
 import appeng.api.storage.data.IAEFluidStack;
+import appeng.tile.inventory.AppEngInternalInventory;
 import github.kasuminova.ecoaeextension.ECOAEExtension;
 import github.kasuminova.ecoaeextension.common.block.ecotech.estorage.prop.DriveStorageLevel;
 import net.minecraft.item.ItemStack;
-import net.minecraft.util.ResourceLocation;
-import net.minecraftforge.items.IItemHandler;
 
 import javax.annotation.Nonnull;
 
@@ -18,8 +17,7 @@ public class EStorageCellFluid extends EStorageCell<IAEFluidStack> {
 
     public EStorageCellFluid(final DriveStorageLevel level, final int millionBytes, final int byteMultiplier) {
         super(level, millionBytes, byteMultiplier);
-        setRegistryName(new ResourceLocation(ECOAEExtension.MOD_ID, "estorage_cell_fluid_" + millionBytes + "m"));
-        setTranslationKey(ECOAEExtension.MOD_ID + '.' + "estorage_cell_fluid_" + millionBytes + "m");
+        setUnlocalizedName(ECOAEExtension.MOD_ID + '.' + "estorage_cell_fluid_" + millionBytes + "m");
     }
 
     @Override
@@ -28,13 +26,13 @@ public class EStorageCellFluid extends EStorageCell<IAEFluidStack> {
     }
 
     @Override
-    public int getBytesPerType(@Nonnull final ItemStack cellItem) {
+    public int BytePerType(@Nonnull final ItemStack cellItem) {
         return byteMultiplier * 1024;
     }
 
     @Override
-    public IItemHandler getConfigInventory(final ItemStack is) {
-        return new FluidCellConfig(is);
+    public AppEngInternalInventory getConfigInventory(final ItemStack is) {
+        return null;
     }
 
     @Nonnull

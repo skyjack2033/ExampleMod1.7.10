@@ -1,6 +1,7 @@
 package github.kasuminova.ecoaeextension.common.block.ecotech.ecalculator;
 
 import appeng.tile.inventory.AppEngInternalInventory;
+import appeng.util.helpers.ItemHandlerUtil;
 import github.kasuminova.ecoaeextension.ECOAEExtension;
 import github.kasuminova.ecoaeextension.common.item.ecalculator.ECalculatorCell;
 import github.kasuminova.ecoaeextension.common.tile.ecotech.ecalculator.ECalculatorCellDrive;
@@ -24,7 +25,7 @@ public class BlockECalculatorCellDrive extends BlockECalculatorPart {
 
     protected BlockECalculatorCellDrive() {
         super(Material.iron);
-        this.setUnlocalizedName(ECOAEExtension.MOD_ID + '.' + "ecalculator_cell_drive");
+        this.setBlockName(ECOAEExtension.MOD_ID + '.' + "ecalculator_cell_drive");
     }
 
     @Nullable
@@ -56,7 +57,7 @@ public class BlockECalculatorCellDrive extends BlockECalculatorPart {
                 ItemStack stack = inv.getStackInSlot(i);
                 if (stack != null && stack.stackSize > 0) {
                     dropBlockAsItem(worldIn, x, y, z, stack);
-                    inv.setStackInSlot(i, null);
+                    ItemHandlerUtil.setStackInSlot(inv, i, null);
                 }
             }
         }

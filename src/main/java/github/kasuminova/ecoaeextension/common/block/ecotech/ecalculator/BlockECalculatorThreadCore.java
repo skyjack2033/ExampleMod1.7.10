@@ -25,9 +25,9 @@ import java.util.List;
 @SuppressWarnings("deprecation")
 public class BlockECalculatorThreadCore extends BlockECalculatorPart {
 
-    public static final BlockECalculatorThreadCore L4 = new BlockECalculatorThreadCore("l4", 1, 0);
-    public static final BlockECalculatorThreadCore L6 = new BlockECalculatorThreadCore("l6", 2, 0);
-    public static final BlockECalculatorThreadCore L9 = new BlockECalculatorThreadCore("l9", 4, 0);
+    public static final BlockECalculatorThreadCore L4 = new BlockECalculatorThreadCore(ECOAEExtension.MOD_ID + '.' + "ecalculator_thread_core_l4", 1, 0);
+    public static final BlockECalculatorThreadCore L6 = new BlockECalculatorThreadCore(ECOAEExtension.MOD_ID + '.' + "ecalculator_thread_core_l6", 2, 0);
+    public static final BlockECalculatorThreadCore L9 = new BlockECalculatorThreadCore(ECOAEExtension.MOD_ID + '.' + "ecalculator_thread_core_l9", 4, 0);
 
     protected final int threads;
     protected final int hyperThreads;
@@ -37,7 +37,7 @@ public class BlockECalculatorThreadCore extends BlockECalculatorPart {
         super(Material.iron);
         this.threads = threads;
         this.hyperThreads = hyperThreads;
-        this.setUnlocalizedName(unlocalizedName);
+        this.setBlockName(unlocalizedName);
     }
 
     public ItemECalculatorThreadCore getItem() {
@@ -55,10 +55,6 @@ public class BlockECalculatorThreadCore extends BlockECalculatorPart {
 
     public int getHyperThreads() {
         return hyperThreads;
-    }
-
-    protected BlockECalculatorThreadCore(final String level, final int threads, final int hyperThreads) {
-        this(ECOAEExtension.MOD_ID + '.' + "ecalculator_thread_core_" + level, threads, hyperThreads);
     }
 
     @Nullable

@@ -27,7 +27,7 @@ public class BlockECalculatorParallelProc extends BlockECalculatorPart {
     protected BlockECalculatorParallelProc(final String level, final int parallelism) {
         super(Material.iron);
         this.parallelism = parallelism;
-        this.setUnlocalizedName(ECOAEExtension.MOD_ID + '.' + "ecalculator_parallel_proc_" + level);
+        this.setBlockName(ECOAEExtension.MOD_ID + '.' + "ecalculator_parallel_proc_" + level);
     }
 
     public int getParallelism() {

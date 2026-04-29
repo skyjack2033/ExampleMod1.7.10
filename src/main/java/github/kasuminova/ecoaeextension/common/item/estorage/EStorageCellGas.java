@@ -5,7 +5,6 @@ import appeng.api.storage.data.IAEGasStack;
 import github.kasuminova.ecoaeextension.ECOAEExtension;
 import github.kasuminova.ecoaeextension.common.block.ecotech.estorage.prop.DriveStorageLevel;
 import net.minecraft.item.ItemStack;
-import net.minecraft.util.ResourceLocation;
 import org.jetbrains.annotations.NotNull;
 
 public class EStorageCellGas extends EStorageCell<IAEGasStack> {
@@ -16,8 +15,7 @@ public class EStorageCellGas extends EStorageCell<IAEGasStack> {
 
     public EStorageCellGas(final DriveStorageLevel level, final int millionBytes, final int byteMultiplier) {
         super(level, millionBytes, byteMultiplier);
-        setRegistryName(new ResourceLocation(ECOAEExtension.MOD_ID, "estorage_cell_gas_" + millionBytes + "m"));
-        setTranslationKey(ECOAEExtension.MOD_ID + '.' + "estorage_cell_gas_" + millionBytes + "m");
+        setUnlocalizedName(ECOAEExtension.MOD_ID + '.' + "estorage_cell_gas_" + millionBytes + "m");
     }
 
     @Override
@@ -26,7 +24,7 @@ public class EStorageCellGas extends EStorageCell<IAEGasStack> {
     }
 
     @Override
-    public int getBytesPerType(@NotNull ItemStack itemStack) {
+    public int BytePerType(@NotNull ItemStack itemStack) {
         return byteMultiplier * 1024;
     }
 

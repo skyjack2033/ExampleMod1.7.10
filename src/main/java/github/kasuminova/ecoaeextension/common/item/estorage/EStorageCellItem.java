@@ -5,7 +5,6 @@ import appeng.api.storage.data.IAEItemStack;
 import github.kasuminova.ecoaeextension.ECOAEExtension;
 import github.kasuminova.ecoaeextension.common.block.ecotech.estorage.prop.DriveStorageLevel;
 import net.minecraft.item.ItemStack;
-import net.minecraft.util.ResourceLocation;
 
 import javax.annotation.Nonnull;
 
@@ -17,8 +16,7 @@ public class EStorageCellItem extends EStorageCell<IAEItemStack> {
 
     public EStorageCellItem(final DriveStorageLevel level, final int millionBytes, final int byteMultiplier) {
         super(level, millionBytes, byteMultiplier);
-        setRegistryName(new ResourceLocation(ECOAEExtension.MOD_ID, "estorage_cell_item_" + millionBytes + "m"));
-        setTranslationKey(ECOAEExtension.MOD_ID + '.' + "estorage_cell_item_" + millionBytes + "m");
+        setUnlocalizedName(ECOAEExtension.MOD_ID + '.' + "estorage_cell_item_" + millionBytes + "m");
     }
 
     @Override
@@ -27,7 +25,7 @@ public class EStorageCellItem extends EStorageCell<IAEItemStack> {
     }
 
     @Override
-    public int getBytesPerType(@Nonnull final ItemStack cellItem) {
+    public int BytePerType(@Nonnull final ItemStack cellItem) {
         return byteMultiplier * 1024;
     }
 

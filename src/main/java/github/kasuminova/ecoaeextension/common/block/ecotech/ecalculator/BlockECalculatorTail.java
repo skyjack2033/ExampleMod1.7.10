@@ -24,7 +24,7 @@ public class BlockECalculatorTail extends BlockECalculatorPart {
 
     protected BlockECalculatorTail(final String level) {
         super(Material.iron);
-        this.setUnlocalizedName(ECOAEExtension.MOD_ID + '.' + "ecalculator_tail_" + level);
+        this.setBlockName(ECOAEExtension.MOD_ID + '.' + "ecalculator_tail_" + level);
     }
 
     @Nullable

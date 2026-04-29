@@ -1,17 +1,23 @@
 package github.kasuminova.ecoaeextension.common.block.ecotech.efabricator;
 
 import github.kasuminova.ecoaeextension.common.core.CreativeTabNovaEng;
+import github.kasuminova.ecoaeextension.common.util.EnumFacingCompat;
 import net.minecraft.block.Block;
-
 import net.minecraft.block.material.Material;
+import net.minecraft.block.state.BlockStateContainer;
+import net.minecraft.block.state.IBlockState;
 import net.minecraft.entity.Entity;
-
-
+import net.minecraft.entity.EntityLivingBase;
+import net.minecraft.util.MathHelper;
+import net.minecraftforge.common.util.ForgeDirection;
 
 import javax.annotation.Nonnull;
 
 @SuppressWarnings("deprecation")
 public abstract class BlockEFabricator extends Block {
+
+    protected final BlockStateContainer stateContainer;
+    protected IBlockState defaultState;
 
     protected BlockEFabricator() {
         super(Material.iron);
@@ -20,6 +26,8 @@ public abstract class BlockEFabricator extends Block {
         this.setStepSound(Block.soundTypeMetal);
         this.setHarvestLevel("pickaxe", 2);
         this.setCreativeTab(CreativeTabNovaEng.INSTANCE);
+        this.stateContainer = this.createBlockState();
+        this.defaultState = this.stateContainer.getBaseState();
     }
 
     @Override
@@ -29,6 +37,24 @@ public abstract class BlockEFabricator extends Block {
 
     public boolean canEntitySpawn(@Nonnull final Entity entityIn) {
         return false;
+    }
+
+    // IBlockState support (not overrides - Block doesn't have these in 1.7.10)
+    protected BlockStateContainer createBlockState() {
+        return new BlockStateContainer(this);
+    }
+
+    public IBlockState getDefaultState() {
+        return defaultState;
+    }
+
+    public void setDefaultState(IBlockState state) {
+        this.defaultState = state;
+    }
+
+    public static ForgeDirection getHorizontalFacingFromEntity(final EntityLivingBase entity) {
+        int dir = MathHelper.floor_double(entity.rotationYaw * 4.0F / 360.0F + 0.5D) & 3;
+        return EnumFacingCompat.byHorizontalIndex(dir);
     }
 
 }

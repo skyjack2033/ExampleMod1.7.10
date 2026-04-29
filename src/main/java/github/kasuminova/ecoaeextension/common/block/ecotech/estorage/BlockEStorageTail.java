@@ -2,17 +2,15 @@ package github.kasuminova.ecoaeextension.common.block.ecotech.estorage;
 
 import github.kasuminova.ecoaeextension.ECOAEExtension;
 import github.kasuminova.ecoaeextension.common.block.prop.FacingProp;
+import github.kasuminova.ecoaeextension.common.util.EnumFacingCompat;
 import hellfirepvp.modularmachinery.common.block.BlockController;
 import net.minecraft.block.state.BlockStateContainer;
 import net.minecraft.block.state.IBlockState;
 import net.minecraft.entity.EntityLivingBase;
-import net.minecraftforge.common.util.ForgeDirection;
-import github.kasuminova.ecoaeextension.common.util.EnumFacingCompat;
-import net.minecraft.util.ResourceLocation;
-
-import github.kasuminova.ecoaeextension.common.util.BlockPos;
-import github.kasuminova.ecoaeextension.common.util.EnumFacingCompat;
+import net.minecraft.item.ItemStack;
+import net.minecraft.util.MathHelper;
 import net.minecraft.world.World;
+import net.minecraftforge.common.util.ForgeDirection;
 
 import javax.annotation.Nonnull;
 
@@ -24,28 +22,30 @@ public class BlockEStorageTail extends BlockEStorage {
     public static final BlockEStorageTail L9 = new BlockEStorageTail("l9");
 
     protected BlockEStorageTail(final String level) {
-        this.setDefaultState(this.blockState.getBaseState()
+        this.setDefaultState(this.stateContainer.getBaseState()
                 .withProperty(FacingProp.HORIZONTALS, ForgeDirection.NORTH)
                 .withProperty(BlockController.FORMED, false)
         );
-        this.setRegistryName(new ResourceLocation(ECOAEExtension.MOD_ID, "estorage_tail_" + level));
-        this.setTranslationKey(ECOAEExtension.MOD_ID + '.' + "estorage_tail_" + level);
+        this.setBlockName(ECOAEExtension.MOD_ID + '.' + "estorage_tail_" + level);
     }
 
-    @Nonnull
-    @Override
     public IBlockState getStateFromMeta(final int meta) {
         return getDefaultState().withProperty(FacingProp.HORIZONTALS, EnumFacingCompat.byHorizontalIndex(meta));
     }
 
-    @Override
     public int getMetaFromState(@Nonnull final IBlockState state) {
-        return state.getValue(FacingProp.HORIZONTALS).getHorizontalIndex();
+        return EnumFacingCompat.toHorizontalIndex(state.getValue(FacingProp.HORIZONTALS));
     }
 
-    @Nonnull
-    public IBlockState getStateForPlacement(@Nonnull World worldIn, @Nonnull BlockPos pos, @Nonnull ForgeDirection facing, float hitX, float hitY, float hitZ, int meta, EntityLivingBase placer) {
-        return this.getDefaultState().withProperty(FacingProp.HORIZONTALS, placer.getHorizontalFacing().getOpposite());
+    @Override
+    public void onBlockPlacedBy(@Nonnull final World world,
+                                final int x, final int y, final int z,
+                                @Nonnull final EntityLivingBase placer,
+                                @Nonnull final ItemStack stack)
+    {
+        int dir = MathHelper.floor_double((double) (placer.rotationYaw * 4.0F / 360.0F) + 0.5D) & 3;
+        dir = (dir + 2) & 3;
+        world.setBlockMetadataWithNotify(x, y, z, dir, 2);
     }
 
     @Nonnull

@@ -2,9 +2,7 @@ package github.kasuminova.ecoaeextension.common.core;
 
 import github.kasuminova.ecoaeextension.common.block.ecotech.estorage.BlockEStorageController;
 import net.minecraft.creativetab.CreativeTabs;
-import net.minecraft.item.ItemStack;
-
-import javax.annotation.Nonnull;
+import net.minecraft.item.Item;
 
 public class CreativeTabNovaEng extends CreativeTabs {
     public static final CreativeTabNovaEng INSTANCE = new CreativeTabNovaEng();
@@ -13,10 +11,9 @@ public class CreativeTabNovaEng extends CreativeTabs {
         super("ecoaeextension");
     }
 
-    @Nonnull
     @Override
-    public ItemStack createIcon() {
-        return new ItemStack(BlockEStorageController.L9);
+    public Item getTabIconItem() {
+        return Item.getItemFromBlock(BlockEStorageController.L9);
     }
 
 }

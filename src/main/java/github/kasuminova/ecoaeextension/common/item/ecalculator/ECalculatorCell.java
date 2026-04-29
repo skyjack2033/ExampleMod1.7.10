@@ -5,11 +5,9 @@ import github.kasuminova.ecoaeextension.common.block.ecotech.ecalculator.prop.Dr
 import github.kasuminova.ecoaeextension.common.core.CreativeTabNovaEng;
 import github.kasuminova.ecoaeextension.common.crafttweaker.util.NovaEngUtils;
 import net.minecraft.client.resources.I18n;
-
+import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
-import net.minecraft.util.ResourceLocation;
-import net.minecraft.world.World;
 import org.jetbrains.annotations.Nullable;
 import org.lwjgl.input.Keyboard;
 
@@ -38,12 +36,11 @@ public class ECalculatorCell extends Item {
         this.totalBytes = (millionBytes * 1000) * 1024;
         this.setMaxStackSize(1);
         this.setCreativeTab(CreativeTabNovaEng.INSTANCE);
-        this.setRegistryName(new ResourceLocation(ECOAEExtension.MOD_ID, "ecalculator_cell_" + millionBytes + "m"));
-        this.setTranslationKey(ECOAEExtension.MOD_ID + '.' + "ecalculator_cell_" + millionBytes + "m");
+        this.setUnlocalizedName(ECOAEExtension.MOD_ID + '.' + "ecalculator_cell_" + millionBytes + "m");
     }
 
     @Override
-    public void addInformation(@Nonnull final ItemStack stack, @Nullable final World worldIn, final List<String> tooltip, @Nonnull final boolean advanced) {
+    public void addInformation(@Nonnull final ItemStack stack, @Nullable final EntityPlayer player, final List<String> tooltip, @Nonnull final boolean advanced) {
         tooltip.add(I18n.format("novaeng.ecalculator_cell.insert.tip"));
         tooltip.add(I18n.format("novaeng.ecalculator_cell.extract.tip"));
         tooltip.add(I18n.format("novaeng.ecalculator_cell.tip.0"));
@@ -59,7 +56,7 @@ public class ECalculatorCell extends Item {
         } else if (cell == L9) {
             tooltip.add(I18n.format("novaeng.ecalculator_cell.l9.tip"));
         }
-        super.addInformation(stack, worldIn, tooltip, advanced);
+        super.addInformation(stack, player, tooltip, advanced);
     }
 
 
