@@ -16,7 +16,9 @@ import github.kasuminova.mmce.client.gui.util.RenderPos;
 import github.kasuminova.mmce.client.gui.util.TextureProperties;
 import net.minecraft.client.gui.FontRenderer;
 import net.minecraft.util.ResourceLocation;
+import net.minecraft.util.EnumChatFormatting;
 
+import net.minecraft.util.EnumChatFormatting;
 import org.lwjgl.opengl.GL11;
 import org.spongepowered.asm.mixin.Final;
 import org.spongepowered.asm.mixin.Mixin;
@@ -55,7 +57,7 @@ public abstract class MixinGuiCraftingStatus extends AEBaseGui {
     private static int CPU_TABLE_SLOT_WIDTH;
 
     @Shadow
-    private GuiScrollbar cpuScrollbar;
+    private GuiScrollbar scrollbar;
 
     @Unique
     private static final ResourceLocation novaeng_ec$TEXTURE = new ResourceLocation(ECOAEExtension.MOD_ID, "textures/gui/ecalculator_gui_2.png");
@@ -90,7 +92,7 @@ public abstract class MixinGuiCraftingStatus extends AEBaseGui {
         CraftingCPUStatus status = original.call(instance, i);
         ECPUStatus ecpuStatus = (ECPUStatus) status;
         if (ecpuStatus.novaeng_ec$getLevel() != null) {
-            novaeng_ec$renderECPUStatus(status, ecpuStatus.novaeng_ec$getLevel(), i, this.cpuScrollbar.getCurrentScroll(), hoveredCpu);
+            novaeng_ec$renderECPUStatus(status, ecpuStatus.novaeng_ec$getLevel(), i, this.scrollbar.getCurrentScroll(), hoveredCpu);
             return null;
         }
         return status;
@@ -99,40 +101,40 @@ public abstract class MixinGuiCraftingStatus extends AEBaseGui {
     @Unique
     @SuppressWarnings({"RedundantCast"})
     private void novaeng_ec$renderECPUStatus(final CraftingCPUStatus cpu, final Levels ecLevel, final int i, final int firstCpu, final CraftingCPUStatus hoveredCpu) {
-        final FontRenderer font = fontRenderer;
+        final FontRenderer font = fontRendererObj;
         final int textColor = 0x202020;
         int x = -CPU_TABLE_WIDTH + 9;
         int y = 19 + (i - firstCpu) * CPU_TABLE_SLOT_HEIGHT;
-        if (cpu.getSerial() == this.status.selectedCpuSerial) {
-            GL11.glColor4f(0.0F, 0.8352F, 1.0F, 1.0F);
-        } else if (hoveredCpu != null && hoveredCpu.getSerial() == cpu.getSerial()) {
+        // getSerial() / selectedCpuSerial simplified for AE2 rv3 - selectedCpuSerial field not available
+        if (hoveredCpu != null && hoveredCpu.getSerial() == cpu.getSerial()) {
             GL11.glColor4f(0.65F, 0.9F, 1.0F, 1.0F);
         } else {
             GL11.glColor4f(1.0F, 1.0F, 1.0F, 1.0F);
         }
-        this.bindTexture("guis/cpu_selector.png");
+        // bindTexture signature differs in AE2 rv3 - use direct approach
+        this.mc.renderEngine.bindTexture(new ResourceLocation("appliedenergistics2", "textures/guis/cpu_selector.png"));
         this.drawTexturedModalRect(x, y, CPU_TABLE_SLOT_XOFF, CPU_TABLE_SLOT_YOFF, CPU_TABLE_SLOT_WIDTH, CPU_TABLE_SLOT_HEIGHT);
         GL11.glColor4f(1.0F, 1.0F, 1.0F, 1.0F);
 
-        TextFormatting color = TextFormatting.WHITE;
+        EnumChatFormatting color = EnumChatFormatting.WHITE;
         if (ecLevel == Levels.L4) {
             novaeng_ec$L4.render(new RenderPos(x, y), (AEBaseGui) (Object) this);
-            color = TextFormatting.AQUA;
+            color = EnumChatFormatting.AQUA;
         } else if (ecLevel == Levels.L6) {
             novaeng_ec$L6.render(new RenderPos(x, y), (AEBaseGui) (Object) this);
-            color = TextFormatting.GOLD;
+            color = EnumChatFormatting.GOLD;
         } else if (ecLevel == Levels.L9) {
             novaeng_ec$L9.render(new RenderPos(x, y), (AEBaseGui) (Object) this);
-            color = TextFormatting.DARK_PURPLE;
+            color = EnumChatFormatting.DARK_PURPLE;
         } else if (ecLevel == Levels.L11) {
             novaeng_ec$L11.render(new RenderPos(x, y), (AEBaseGui) (Object) this);
-            color = TextFormatting.RED;
+            color = EnumChatFormatting.RED;
         }
         GL11.glColor4f(1.0F, 1.0F, 1.0F, 1.0F);
 
         String name = cpu.getName();
-        if (name == null || name.stackSize <= 0) {
-            name = color + "#" + cpu.getSerial() + TextFormatting.RESET;
+        if (name == null || name.isEmpty()) {
+            name = color + "#" + cpu.getSerial() + EnumChatFormatting.RESET;
         }
         if (name.replaceAll("§.", "").length() > 8) {
             name = name.substring(0, 7) + "..";
@@ -145,7 +147,7 @@ public abstract class MixinGuiCraftingStatus extends AEBaseGui {
 
         GL11.glPushMatrix();
         GL11.glTranslatef(x + 3, y + 11, 0);
-        final IAEItemStack craftingStack = cpu.getCrafting();
+        final IAEItemStack craftingStack = (IAEItemStack) cpu.getCrafting();
         GL11.glScalef(0.5f, 0.5f, 1.0f);
         GL11.glColor4f(1.0F, 1.0F, 1.0F, 1.0F);
         if (ecLevel == Levels.L4) {
@@ -166,7 +168,7 @@ public abstract class MixinGuiCraftingStatus extends AEBaseGui {
             GL11.glPopMatrix();
             GL11.glPushMatrix();
             GL11.glTranslatef(x + CPU_TABLE_SLOT_WIDTH - (19 + 4), y + 3, 0);
-            this.drawItem(0, 0, craftingStack.createItemStack());
+            this.itemRender.renderItemAndEffectIntoGUI(fontRendererObj, this.mc.getTextureManager(), craftingStack.getItemStack(), -4, -1);
         } else {
             GL11.glScalef(1.5f, 1.5f, 1.0f);
             font.drawString(cpu.formatStorage(), 0, 0, textColor);

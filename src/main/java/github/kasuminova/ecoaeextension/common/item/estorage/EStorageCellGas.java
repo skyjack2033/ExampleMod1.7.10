@@ -24,6 +24,11 @@ public class EStorageCellGas extends EStorageCell<IAEGasStack> {
     }
 
     @Override
+    public int getBytesPerType(@NotNull ItemStack itemStack) {
+        return byteMultiplier * 1024;
+    }
+
+    @Override
     public int BytePerType(@NotNull ItemStack itemStack) {
         return byteMultiplier * 1024;
     }

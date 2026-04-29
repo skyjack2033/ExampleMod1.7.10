@@ -27,6 +27,7 @@ import net.minecraft.item.ItemBlock;
 import net.minecraft.tileentity.TileEntity;
 import net.minecraft.util.ResourceLocation;
 import cpw.mods.fml.common.eventhandler.SubscribeEvent;
+import cpw.mods.fml.relauncher.ReflectionHelper;
 import cpw.mods.fml.common.registry.GameRegistry;
 
 import java.util.ArrayList;
@@ -42,12 +43,14 @@ public class RegistryBlocks {
         registerBlocks();
         registerTileEntities();
 
-        // Register blocks with GameRegistry
+        // Register blocks with GameRegistry (also done inside registerBlock)
+        // Retained for blocks that were registered via BLOCK_MODEL_TO_REGISTER only
         for (Block block : BLOCK_MODEL_TO_REGISTER) {
-            ResourceLocation registryName = block.getRegistryName();
-            if (registryName != null) {
-                GameRegistry.registerBlock(block, registryName.getResourcePath());
+            String name = block.getUnlocalizedName();
+            if (name != null && name.startsWith("tile.")) {
+                name = name.substring(5);
             }
+            GameRegistry.registerBlock(block, name);
         }
     }
 
@@ -136,9 +139,17 @@ public class RegistryBlocks {
     public static <T extends Block> T registerBlock(T block) {
         BLOCK_MODEL_TO_REGISTER.add(block);
         GenericRegistryPrimer.INSTANCE.register(block);
-        if (block instanceof BlockDynamicColor) {
-            hellfirepvp.modularmachinery.common.registry.RegistryBlocks.pendingIBlockColorBlocks.add((BlockDynamicColor) block);
+        // pendingIBlockColorBlocks not available in this MMCE version
+        // if (block instanceof BlockDynamicColor) {
+        //     hellfirepvp.modularmachinery.common.registry.RegistryBlocks.pendingIBlockColorBlocks.add((BlockDynamicColor) block);
+        // }
+
+        // Register with GameRegistry using unlocalized name (1.7.10 style)
+        String name = block.getUnlocalizedName();
+        if (name != null && name.startsWith("tile.")) {
+            name = name.substring(5);
         }
+        GameRegistry.registerBlock(block, name);
 
         return block;
     }
@@ -160,11 +171,10 @@ public class RegistryBlocks {
     }
 
     public static <T extends ItemBlock> T prepareItemBlockRegister(T item) {
-        Block block = item.getBlock();
-        ResourceLocation registryName = Objects.requireNonNull(block.getRegistryName());
-        String translationKey = block.getTranslationKey();
+        Block block = ReflectionHelper.getPrivateValue(ItemBlock.class, item, "field_150939_a", "block");
+        String unlocalizedName = block.getUnlocalizedName();
 
-        item.setRegistryName(registryName).setTranslationKey(translationKey);
+        item.setUnlocalizedName(unlocalizedName);
         RegistryItems.ITEMS_TO_REGISTER.add(item);
         return item;
     }

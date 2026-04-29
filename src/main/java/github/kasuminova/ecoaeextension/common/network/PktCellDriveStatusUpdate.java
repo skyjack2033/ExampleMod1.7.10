@@ -59,7 +59,7 @@ public class PktCellDriveStatusUpdate implements IMessage, IMessageHandler<PktCe
             return;
         }
 
-        WorldClient world = Minecraft.getMinecraft().world;
+        WorldClient world = Minecraft.getMinecraft().theWorld;
         if (world == null) {
             return;
         }

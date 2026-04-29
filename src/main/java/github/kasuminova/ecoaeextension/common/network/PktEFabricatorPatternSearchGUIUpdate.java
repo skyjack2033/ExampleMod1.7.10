@@ -40,7 +40,7 @@ public class PktEFabricatorPatternSearchGUIUpdate implements IMessage, IMessageH
     @Override
     public IMessage onMessage(final PktEFabricatorPatternSearchGUIUpdate message, final MessageContext ctx) {
         if (FMLCommonHandler.instance().getSide().isClient()) {
-            Minecraft.getMinecraft().addScheduledTask(() -> processPacket(message));
+            processPacket(message);
         }
         return null;
     }

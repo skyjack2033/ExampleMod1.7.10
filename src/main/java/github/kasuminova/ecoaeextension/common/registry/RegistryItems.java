@@ -82,15 +82,17 @@ public class RegistryItems {
         ITEM_MODELS_TO_REGISTER.add(item);
         GenericRegistryPrimer.INSTANCE.register(item);
 
-        // Register with GameRegistry
-        ResourceLocation registryName = item.getRegistryName();
-        if (registryName != null) {
-            GameRegistry.registerItem(item, registryName.getResourcePath());
+        // Register with GameRegistry using unlocalized name (1.7.10 style)
+        String name = item.getUnlocalizedName();
+        if (name != null && name.startsWith("item.")) {
+            name = name.substring(5);
         }
+        GameRegistry.registerItem(item, name);
 
-        if (item instanceof ItemDynamicColor) {
-            hellfirepvp.modularmachinery.common.registry.RegistryItems.pendingDynamicColorItems.add((ItemDynamicColor) item);
-        }
+        // pendingDynamicColorItems not available in this MMCE version
+        // if (item instanceof ItemDynamicColor) {
+        //     hellfirepvp.modularmachinery.common.registry.RegistryItems.pendingDynamicColorItems.add((ItemDynamicColor) item);
+        // }
         return item;
     }
 
@@ -98,15 +100,17 @@ public class RegistryItems {
         ITEM_CUSTOM_MODELS_TO_REGISTER.put(modelPath, item);
         GenericRegistryPrimer.INSTANCE.register(item);
 
-        // Register with GameRegistry
-        ResourceLocation registryName = item.getRegistryName();
-        if (registryName != null) {
-            GameRegistry.registerItem(item, registryName.getResourcePath());
+        // Register with GameRegistry using unlocalized name (1.7.10 style)
+        String name = item.getUnlocalizedName();
+        if (name != null && name.startsWith("item.")) {
+            name = name.substring(5);
         }
+        GameRegistry.registerItem(item, name);
 
-        if (item instanceof ItemDynamicColor) {
-            hellfirepvp.modularmachinery.common.registry.RegistryItems.pendingDynamicColorItems.add((ItemDynamicColor) item);
-        }
+        // pendingDynamicColorItems not available in this MMCE version
+        // if (item instanceof ItemDynamicColor) {
+        //     hellfirepvp.modularmachinery.common.registry.RegistryItems.pendingDynamicColorItems.add((ItemDynamicColor) item);
+        // }
         return item;
     }
 

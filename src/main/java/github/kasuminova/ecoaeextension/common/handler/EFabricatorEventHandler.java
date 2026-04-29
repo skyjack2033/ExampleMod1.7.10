@@ -23,9 +23,11 @@ public class EFabricatorEventHandler {
         if (!(event.player instanceof EntityPlayerMP)) {
             return;
         }
-        if (!(player.openContainer instanceof ContainerEFabricatorController containerEFController)) {
+        EntityPlayerMP player = (EntityPlayerMP) event.player;
+        if (!(player.openContainer instanceof ContainerEFabricatorController)) {
             return;
         }
+        ContainerEFabricatorController containerEFController = (ContainerEFabricatorController) player.openContainer;
         World world = player.getEntityWorld();
         int tickExisted = containerEFController.getTickExisted();
         containerEFController.setTickExisted(tickExisted + 1);

@@ -87,7 +87,7 @@ public class EStorageMEChannel extends EStoragePart implements ICellContainer, I
             this.wasActive = currentActive;
             try {
                 this.proxy.getGrid().postEvent(new MENetworkCellArrayUpdate());
-            } catch (final GridAccessException ignored) {
+            } catch (final Exception ignored) {
             }
         }
     }
@@ -116,7 +116,7 @@ public class EStorageMEChannel extends EStoragePart implements ICellContainer, I
             if (wasFull && amt > 0) {
                 try {
                     this.proxy.getGrid().postEvent(new MENetworkPowerStorage(this, MENetworkPowerStorage.PowerEventType.REQUEST_POWER));
-                } catch (final GridAccessException ignored) {
+                } catch (final Exception ignored) {
                 }
             }
         }
@@ -225,7 +225,7 @@ public class EStorageMEChannel extends EStoragePart implements ICellContainer, I
             if (cellDrives != null && cellDrives.size() > 0) {
                 try {
                     proxy.getGrid().postEvent(new MENetworkCellArrayUpdate());
-                } catch (GridAccessException ignored) {
+                } catch (Exception ignored) {
                 }
             }
         });

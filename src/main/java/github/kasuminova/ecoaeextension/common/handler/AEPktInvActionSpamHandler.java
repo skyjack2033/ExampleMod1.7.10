@@ -2,7 +2,6 @@ package github.kasuminova.ecoaeextension.common.handler;
 
 import com.google.common.cache.Cache;
 import com.google.common.cache.CacheBuilder;
-import github.kasuminova.mmce.common.concurrent.TaskExecutor;
 import lombok.Getter;
 import net.minecraft.entity.player.EntityPlayer;
 
@@ -20,7 +19,9 @@ public class AEPktInvActionSpamHandler {
     public static boolean receivePacketAndCheckSpam(final EntityPlayer player) {
         try {
             PacketCounter counter = PLAYER_PKT_COUNTER.get(player, PacketCounter::new);
-            return counter.addPacket((int) TaskExecutor.tickExisted) > LIMIT_PER_SECOND * 3;
+            // Use system time approximation for tick (50ms per tick) since TaskExecutor.tickExisted is not available
+            int approximateTick = (int) (System.nanoTime() / 50000000);
+            return counter.addPacket(approximateTick) > LIMIT_PER_SECOND * 3;
         } catch (ExecutionException e) {
             return false;
         }
@@ -32,7 +33,7 @@ public class AEPktInvActionSpamHandler {
 
         public int addPacket(int currentTick) {
             // 空列表时直接添加。
-            if (data.stackSize <= 0) {
+            if (data.isEmpty()) {
                 data.addLast(new Element(currentTick));
                 return counter = 1;
             }

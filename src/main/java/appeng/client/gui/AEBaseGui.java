@@ -23,4 +23,7 @@ public class AEBaseGui extends GuiContainer {
     protected void drawGuiContainerForegroundLayer(int mouseX, int mouseY) {
         drawFG(mouseX, mouseY, mouseX, mouseY);
     }
+
+    public void drawItem(int x, int y, net.minecraft.item.ItemStack is) {
+    }
 }

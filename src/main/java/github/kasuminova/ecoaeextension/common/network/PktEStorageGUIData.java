@@ -85,7 +85,7 @@ public class PktEStorageGUIData implements IMessage, IMessageHandler<PktEStorage
         List<EStorageCellData> dataList = message.dataList;
         EStorageEnergyData energyData = message.energyData;
         GuiScreen cur = Minecraft.getMinecraft().currentScreen;
-        if (!(cur instanceof GuiEStorageController)) {
+        if (!(cur instanceof GuiEStorageController controllerGUI)) {
             return;
         }
         List<EStorageCellData> sorted = dataList.stream()
@@ -102,15 +102,9 @@ public class PktEStorageGUIData implements IMessage, IMessageHandler<PktEStorage
                 })
                 .collect(Collectors.toList());
 
-        Minecraft.getMinecraft().addScheduledTask(() -> {
-            GuiScreen currentScreen = Minecraft.getMinecraft().currentScreen;
-            if (!(currentScreen instanceof GuiEStorageController controllerGUI)) {
-                return;
-            }
-            controllerGUI.setCellDataList(sorted);
-            controllerGUI.setEnergyData(energyData);
-            controllerGUI.onDataReceived();
-        });
+        controllerGUI.setCellDataList(sorted);
+        controllerGUI.setEnergyData(energyData);
+        controllerGUI.onDataReceived();
     }
 
 }

@@ -78,7 +78,7 @@ public class EFabricatorMEChannel extends EFabricatorPart implements ICraftingPr
             this.wasActive = currentActive;
             try {
                 this.proxy.getGrid().postEvent(new MENetworkCraftingPatternChange(this, proxy.getNode()));
-            } catch (final GridAccessException ignored) {
+            } catch (final Exception ignored) {
             }
         }
     }

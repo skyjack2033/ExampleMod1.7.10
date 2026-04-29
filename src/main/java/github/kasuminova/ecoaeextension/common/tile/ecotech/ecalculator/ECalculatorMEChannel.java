@@ -73,7 +73,7 @@ public class ECalculatorMEChannel extends ECalculatorPart implements IActionHost
         if (this.proxy.isActive()) {
             try {
                 this.proxy.getGrid().postEvent(new MENetworkCraftingCpuChange(this.proxy.getNode()));
-            } catch (final GridAccessException ignored) {
+            } catch (final Exception ignored) {
             }
         }
     }

@@ -41,7 +41,7 @@ public class ItemBlockME extends ItemBlock {
             }
             if (tile instanceof IGridProxyable) {
                 AENetworkProxy proxy = ((IGridProxyable) tile).getProxy();
-                proxy.setOwner(player.getCommandSenderName());
+                proxy.setOwner(player);
             }
             return true;
         }

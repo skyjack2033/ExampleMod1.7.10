@@ -50,7 +50,7 @@ public class ECellDriveWatcher<T extends IAEStack<T>> extends MEInventoryHandler
                 try {
                     List<T> changed = Collections.singletonList(input.copy().setStackSize(input.getStackSize() - (remainder == null ? 0 : remainder.getStackSize())));
                     proxy.getStorage().postAlterationOfStoredItems(this.getChannel(), changed, (BaseActionSource) channel.getSource());
-                } catch (GridAccessException e) {
+                } catch (Exception e) {
                     ECOAEExtension.log.warn(e.toString());
                 }
             }
@@ -71,7 +71,7 @@ public class ECellDriveWatcher<T extends IAEStack<T>> extends MEInventoryHandler
                 try {
                     List<T> changed = Collections.singletonList(request.copy().setStackSize(-extractable.getStackSize()));
                     proxy.getStorage().postAlterationOfStoredItems(this.getChannel(), changed, (BaseActionSource) channel.getSource());
-                } catch (GridAccessException e) {
+                } catch (Exception e) {
                     ECOAEExtension.log.warn(e.toString());
                 }
             }

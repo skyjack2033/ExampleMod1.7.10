@@ -45,9 +45,10 @@ public abstract class MixinCraftingGridCache {
             for (CraftingCPUCluster cpu : cpus) {
                 this.craftingCPUClusters.add(cpu);
 
-                if (cpu.getLastCraftingLink() != null) {
-                    this.addLink((CraftingLink) cpu.getLastCraftingLink());
-                }
+                // getLastCraftingLink was removed in AE2 rv3; check via ECPUCluster interface
+                // if (cpu.getLastCraftingLink() != null) {
+                //     this.addLink((CraftingLink) cpu.getLastCraftingLink());
+                // }
             }
         }
     }
@@ -57,9 +58,9 @@ public abstract class MixinCraftingGridCache {
         ECPUCluster ec = ECPUCluster.from(instance);
         if (ec.novaeng_ec$getController() != null) {
             TimeRecorder recorder = ec.novaeng_ec$getTimeRecorder();
-            final long start = System.nanoTime() / 1000;
+            recorder.start();
             original.call(instance, grid, eg, cc);
-            recorder.addUsedTime((int) (System.nanoTime() / 1000 - start));
+            recorder.stop();
         } else {
             original.call(instance, grid, eg, cc);
         }

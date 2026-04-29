@@ -55,7 +55,7 @@ public class PktEFabricatorPatternSearchGUIAction implements IMessage, IMessageH
 
     @Override
     public IMessage onMessage(final PktEFabricatorPatternSearchGUIAction message, final MessageContext ctx) {
-        final EntityPlayerMP player = ctx.getServerHandler().player;
+        final EntityPlayerMP player = ctx.getServerHandler().playerEntity;
         if (!(player.openContainer instanceof ContainerEFabricatorPatternSearch efGUIContainer)) {
             return null;
         }
@@ -69,7 +69,7 @@ public class PktEFabricatorPatternSearchGUIAction implements IMessage, IMessageH
                 }
 
                 if (owner.insertPattern(stackInMouse)) {
-                    stackInMouse.shrink(1);
+                    stackInMouse.stackSize--;
                     if (stackInMouse.stackSize <= 0) {
                         player.inventory.setItemStack(null);
                         ECOAEExtension.NET_CHANNEL.sendTo(new PktMouseItemUpdate(null), player);
@@ -93,7 +93,7 @@ public class PktEFabricatorPatternSearchGUIAction implements IMessage, IMessageH
                 final ItemStack stackInSlot = patterns.getStackInSlot(slot);
 
                 if (stackInSlot != null && stackInSlot.stackSize > 0 && player.inventory.getItemStack().stackSize <= 0) {
-                    ItemStack newItemStack = patterns.extractItem(slot, stackInSlot.getCount(), false);
+                    ItemStack newItemStack = patterns.extractItem(slot, stackInSlot.stackSize, false);
                     player.inventory.setItemStack(newItemStack);
                     ECOAEExtension.NET_CHANNEL.sendTo(new PktMouseItemUpdate(newItemStack), player);
                 }

@@ -4,17 +4,20 @@ import appeng.api.AEApi;
 import appeng.api.config.Actionable;
 import appeng.api.exceptions.AppEngException;
 import appeng.api.implementations.items.IStorageCell;
-import appeng.api.networking.security.IActionSource;
+import appeng.api.networking.security.BaseActionSource;
 import appeng.api.storage.ICellInventory;
 import appeng.api.storage.ICellInventoryHandler;
+import appeng.api.storage.IMEInventoryHandler;
 import appeng.api.storage.ISaveProvider;
 import appeng.api.storage.StorageChannel;
+import appeng.api.storage.data.IAEFluidStack;
 import appeng.api.storage.data.IAEItemStack;
 import appeng.api.storage.data.IAEStack;
 import appeng.api.storage.data.IItemList;
-import appeng.core.AEConfig;
 import appeng.core.AELog;
-import appeng.me.storage.AbstractCellInventory;
+import appeng.me.storage.CellInventory;
+import appeng.util.item.AEFluidStack;
+import appeng.util.item.AEItemStack;
 import github.kasuminova.ecoaeextension.ECOAEExtension;
 import github.kasuminova.ecoaeextension.common.item.estorage.EStorageCell;
 import github.kasuminova.ecoaeextension.mixin.ae2.AccessorAbstractCellInventory;
@@ -24,7 +27,7 @@ import net.minecraft.item.ItemStack;
 import net.minecraft.nbt.NBTTagCompound;
 import cpw.mods.fml.relauncher.ReflectionHelper;
 
-public class EStorageCellInventory<T extends IAEStack<T>> extends AbstractCellInventory<T> {
+public class EStorageCellInventory<T extends IAEStack<T>> extends CellInventory<T> {
     public static final String ITEM_SLOT = "#";
     public static final String ITEM_SLOT_COUNT = "@";
     public static final String ITEM_TYPE_TAG = "it";
@@ -33,10 +36,37 @@ public class EStorageCellInventory<T extends IAEStack<T>> extends AbstractCellIn
     private final EStorageCell<T> cellType;
     private final StorageChannel channel;
 
+    @Override
+    public String getOreFilter() {
+        return null;
+    }
+
+    @Override
+    protected String getStackTypeTag() {
+        return ITEM_TYPE_TAG;
+    }
+
+    @Override
+    protected String getStackCountTag() {
+        return ITEM_COUNT_TAG;
+    }
+
+    @Override
+    public int getStatusForCell() {
+        return 0;
+    }
+
+    @Override
+    public long getRemainingItemsCountDist(T stack) {
+        return 0;
+    }
+
     @SuppressWarnings("deprecation")
-    protected EStorageCellInventory(final EStorageCell<T> cellType, final ItemStack o, final ISaveProvider container) {
-        super(cellType, o, container);
-        ReflectionHelper.setPrivateValue(AbstractCellInventory.class, this, cellType.getTotalTypes(o), "maxItemTypes", null);
+    protected EStorageCellInventory(final EStorageCell<T> cellType, final ItemStack o, final ISaveProvider container) throws AppEngException {
+        super(o, container);
+        try {
+            ReflectionHelper.setPrivateValue(CellInventory.class, this, cellType.getTotalTypes(o), "maxTypes");
+        } catch (Exception e) {}
         this.cellType = cellType;
         this.channel = cellType.getChannel();
     }
@@ -66,7 +96,7 @@ public class EStorageCellInventory<T extends IAEStack<T>> extends AbstractCellIn
 
     private boolean isStorageCell(final T input) {
         if (input instanceof IAEItemStack) {
-            final IStorageCell type = getStorageCell(stack.getDefinition());
+            final IStorageCell type = getStorageCell(((IAEItemStack) input).getItemStack());
 
             return type != null && !type.storableInStorageCell();
         }
@@ -86,58 +116,50 @@ public class EStorageCellInventory<T extends IAEStack<T>> extends AbstractCellIn
         return null;
     }
 
+    @Override
+    @SuppressWarnings("unchecked")
+    protected T readStack(NBTTagCompound compoundTag) {
+        IAEStack<?> stack;
+        if (this.channel == StorageChannel.ITEMS) {
+            stack = AEItemStack.loadItemStackFromNBT(compoundTag);
+        } else if (this.channel == StorageChannel.FLUIDS) {
+            stack = AEFluidStack.loadFluidStackFromNBT(compoundTag);
+        } else {
+            return null;
+        }
+        return (T) stack;
+    }
+
     @SuppressWarnings({"rawtypes", "unchecked"})
     private static boolean isCellEmpty(ICellInventory inv) {
         if (inv != null) {
-            return inv.getAvailableItems(inv.getChannel().createList()).stackSize <= 0;
+            IItemList items = inv.getAvailableItems(inv.getChannel().createList());
+            long totalSize = 0;
+            for (Object obj : items) {
+                if (obj instanceof IAEStack) {
+                    totalSize += ((IAEStack<?>) obj).getStackSize();
+                }
+            }
+            return totalSize <= 0;
         }
         return true;
     }
 
     protected IItemList<T> getCellItems() {
-        if (this.cellItems == null) {
-            this.cellItems = this.channel.createList();
-            this.loadCellItems();
+        if (this.cellStacks.size() == 0 && this.getStoredItemTypes() > 0) {
+            this.loadCellStacks();
         }
-
-        return this.cellItems;
+        return this.cellStacks;
     }
 
-    private void loadCellItems() {
-        if (this.cellItems == null) {
-            this.cellItems = this.channel.createList();
-        }
-
-        this.cellItems.resetStatus(); // clears totals and stuff.
-
-        final long types = this.getStoredItemTypes();
-        boolean needsUpdate = false;
-
-        AccessorAbstractCellInventory inv = (AccessorAbstractCellInventory) this;
-        for (int slot = 0; slot < types; slot++) {
-            NBTTagCompound compoundTag = inv.getTagCompound().getCompoundTag(ITEM_SLOT + slot);
-            long stackSize = inv.getTagCompound().getLong(ITEM_SLOT_COUNT + slot);
-            needsUpdate |= !this.loadCellItem(compoundTag, stackSize);
-        }
-
-        if (needsUpdate) {
-            this.saveChanges();
-        }
-    }
-
-    @Override
     public void persist() {
-        AccessorAbstractCellInventory inv = (AccessorAbstractCellInventory) this;
-        if (inv.getIsPersisted()) {
-            return;
-        }
-        NBTTagCompound tagCompound = inv.getTagCompound();
+        NBTTagCompound tagCompound = this.tagCompound;
 
         long itemCount = 0;
 
         // add new pretty stuff...
         int x = 0;
-        for (final T v : this.cellItems) {
+        for (final T v : this.cellStacks) {
             itemCount += v.getStackSize();
 
             final NBTTagCompound g = new NBTTagCompound();
@@ -148,17 +170,18 @@ public class EStorageCellInventory<T extends IAEStack<T>> extends AbstractCellIn
             x++;
         }
 
-        final short oldStoredItems = inv.getStoredItemTypes();
+        final long oldStoredItems = this.getStoredItemTypes();
 
-        inv.setStoredItemTypes((short) this.cellItems.size());
+        // Now storedTypes is protected in CellInventory
+        this.storedTypes = (short) this.cellStacks.size();
 
-        if (this.cellItems.stackSize <= 0) {
+        if (itemCount <= 0) {
             tagCompound.removeTag(ITEM_TYPE_TAG);
         } else {
-            tagCompound.setShort(ITEM_TYPE_TAG, inv.getStoredItemTypes());
+            tagCompound.setShort(ITEM_TYPE_TAG, this.storedTypes);
         }
 
-        inv.setStoredItemCount(itemCount);
+        this.storedCount = itemCount;
         if (itemCount == 0) {
             tagCompound.removeTag(ITEM_COUNT_TAG);
         } else {
@@ -166,16 +189,14 @@ public class EStorageCellInventory<T extends IAEStack<T>> extends AbstractCellIn
         }
 
         // clean any old crusty stuff...
-        for (; x >= oldStoredItems && x < inv.getMaxItemTypes(); x++) {
+        for (; x >= oldStoredItems && x < this.getMaxTypes(); x++) {
             tagCompound.removeTag(ITEM_SLOT + x);
             tagCompound.removeTag(ITEM_SLOT_COUNT + x);
         }
-
-        inv.setIsPersisted(true);
     }
 
     @Override
-    public T injectItems(T input, Actionable mode, IActionSource src) {
+    public T injectItems(T input, Actionable mode, BaseActionSource src) {
         if (input == null) {
             return null;
         }
@@ -190,8 +211,9 @@ public class EStorageCellInventory<T extends IAEStack<T>> extends AbstractCellIn
         // TODO: Guarantee a read-only access. E.g. provide an isEmpty() method and ensure CellInventory does not write
         // any NBT data for empty cells instead of relying on an empty IItemContainer
         if (isStorageCell(input)) {
-            ItemStack cellStack = ((IAEItemStack) input).createItemStack();
-            ICellInventoryHandler<?> cellInvHandler = AEApi.instance().registries().cell().getCellInventory(cellStack, null, getStorageCell(cellStack).getChannel());
+            ItemStack cellStack = ((IAEItemStack) input).getItemStack();
+            IMEInventoryHandler<?> rawHandler = AEApi.instance().registries().cell().getCellInventory(cellStack, null, this.cellType.getChannel());
+            ICellInventoryHandler<?> cellInvHandler = rawHandler instanceof ICellInventoryHandler ? (ICellInventoryHandler<?>) rawHandler : null;
             if (cellInvHandler != null && !isCellEmpty(cellInvHandler.getCellInv())) {
                 return input;
             }
@@ -233,7 +255,7 @@ public class EStorageCellInventory<T extends IAEStack<T>> extends AbstractCellIn
 
         // room for new type, and for at least one item!
         if (this.canHoldNewItem()) {
-            final long remainingItemCount = this.getRemainingItemCount() - (long) this.getBytesPerType() * this.itemsPerByte;
+            final long remainingItemCount = this.getRemainingItemCount() - (long) this.getBytesPerType() * 8;
             if (remainingItemCount > 0) {
                 if (input.getStackSize() > remainingItemCount) {
                     final T toReturn = input.copy();
@@ -242,7 +264,7 @@ public class EStorageCellInventory<T extends IAEStack<T>> extends AbstractCellIn
                         final T toWrite = input.copy();
                         toWrite.setStackSize(remainingItemCount);
 
-                        this.cellItems.add(toWrite);
+                        this.cellStacks.add(toWrite);
 
                         // Update Types and Counts.
                         AccessorAbstractCellInventory inv = (AccessorAbstractCellInventory) this;
@@ -254,7 +276,7 @@ public class EStorageCellInventory<T extends IAEStack<T>> extends AbstractCellIn
                 }
 
                 if (mode == Actionable.MODULATE) {
-                    this.cellItems.add(input);
+                    this.cellStacks.add(input);
 
                     // Update Types and Counts.
                     AccessorAbstractCellInventory inv = (AccessorAbstractCellInventory) this;
@@ -271,7 +293,7 @@ public class EStorageCellInventory<T extends IAEStack<T>> extends AbstractCellIn
     }
 
     @Override
-    public T extractItems(T request, Actionable mode, IActionSource src) {
+    public T extractItems(T request, Actionable mode, BaseActionSource src) {
         if (request == null) {
             return null;
         }
@@ -311,40 +333,45 @@ public class EStorageCellInventory<T extends IAEStack<T>> extends AbstractCellIn
     }
 
     /**
-     * 类似 {@link AbstractCellInventory#saveChanges()}，但是不对 cellItems 进行完全扫描。
+     * 类似 {@link CellInventory#saveChanges()}，但是不对 cellStacks 进行完全扫描。
      */
     protected void saveChangesES() {
         if (this.container != null) {
-            ((AccessorAbstractCellInventory) this).setIsPersisted(false);
             this.container.saveChanges(this);
         } else {
             saveChanges();
         }
     }
 
-    @Override
+    @SuppressWarnings("unchecked")
     protected boolean loadCellItem(NBTTagCompound compoundTag, long stackSize) {
         // Now load the item stack
         final T t;
         try {
-            t = this.channel.createFromNBT(compoundTag);
+            IAEStack<?> stack;
+            if (this.channel == StorageChannel.ITEMS) {
+                stack = AEItemStack.loadItemStackFromNBT(compoundTag);
+            } else if (this.channel == StorageChannel.FLUIDS) {
+                stack = AEFluidStack.loadFluidStackFromNBT(compoundTag);
+            } else {
+                AELog.warn("Unknown storage channel for cell item " + compoundTag);
+                return false;
+            }
+            t = (T) stack;
             if (t == null) {
                 AELog.warn("Removing item " + compoundTag + " from storage cell because the associated item type couldn't be found.");
                 return false;
             }
         } catch (Throwable ex) {
-            if (AEConfig.instance().isRemoveCrashingItemsOnLoad()) {
-                AELog.warn(ex, "Removing item " + compoundTag + " from storage cell because loading the ItemStack crashed.");
-                return false;
-            }
-            throw ex;
+            AELog.warn(ex, "Removing item " + compoundTag + " from storage cell because loading the ItemStack crashed.");
+            return false;
         }
 
         t.setStackSize(stackSize);
         t.setCraftable(false);
 
         if (stackSize > 0) {
-            this.cellItems.add(t);
+            this.cellStacks.add(t);
         }
 
         return true;
@@ -352,13 +379,13 @@ public class EStorageCellInventory<T extends IAEStack<T>> extends AbstractCellIn
 
     @Override
     public long getUsedBytes() {
-        final long bytesForItemCount = (this.getStoredItemCount() + this.getUnusedItemCount()) / ((long) this.itemsPerByte * cellType.getByteMultiplier());
+        final long bytesForItemCount = (this.getStoredItemCount() + this.getUnusedItemCount()) / ((long) 8 * cellType.getByteMultiplier());
         return this.getStoredItemTypes() * this.getBytesPerType() + bytesForItemCount;
     }
 
     @Override
     public long getRemainingItemCount() {
-        final long remaining = this.getFreeBytes() * ((long) this.itemsPerByte * cellType.getByteMultiplier()) + this.getUnusedItemCount();
+        final long remaining = this.getFreeBytes() * ((long) 8 * cellType.getByteMultiplier()) + this.getUnusedItemCount();
         return remaining > 0 ? remaining : 0;
     }
 
@@ -370,7 +397,7 @@ public class EStorageCellInventory<T extends IAEStack<T>> extends AbstractCellIn
             return 0;
         }
 
-        return (this.itemsPerByte * cellType.getByteMultiplier()) - div;
+        return (8 * cellType.getByteMultiplier()) - div;
     }
 
 }

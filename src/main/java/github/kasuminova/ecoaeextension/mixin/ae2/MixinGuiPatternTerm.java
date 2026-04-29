@@ -3,7 +3,6 @@ package github.kasuminova.ecoaeextension.mixin.ae2;
 import appeng.client.gui.implementations.GuiMEMonitorable;
 import appeng.client.gui.implementations.GuiPatternTerm;
 import appeng.client.gui.widgets.GuiTabButton;
-import appeng.container.implementations.ContainerPatternEncoder;
 import github.kasuminova.ecoaeextension.ECOAEExtension;
 import github.kasuminova.ecoaeextension.common.block.ecotech.efabricator.BlockEFabricatorController;
 import github.kasuminova.ecoaeextension.common.network.PktPatternTermUploadPattern;
@@ -24,9 +23,6 @@ import java.util.stream.Collectors;
 @Mixin(GuiPatternTerm.class)
 public class MixinGuiPatternTerm extends GuiMEMonitorable {
 
-    @Final
-    @Shadow(remap = false)
-    private ContainerPatternEncoder container;
     @Shadow(remap = false)
     private GuiTabButton tabCraftButton;
     @Shadow(remap = false)
@@ -51,19 +47,19 @@ public class MixinGuiPatternTerm extends GuiMEMonitorable {
         int targetY = offsetY;
         //获取其他mod的tab按钮
         List<GuiButton> buttons = buttonList.stream().filter(list -> list instanceof GuiTabButton button && button != tabProcessButton && button != tabCraftButton && button != ecoaeextension$uploadPatternButton).collect(Collectors.toList());
-        if (buttons != null && buttons.stackSize > 0) {
+        if (buttons != null && buttons.size() > 0) {
             for (GuiButton b : buttons) {
                 if (b instanceof GuiTabButton tab) {
                     if (tab.isVisible()) {
-                        if (tab.x == baseX) {
-                            int candidateY = tab.y + tab.height;
+                        if (tab.xPosition == baseX) {
+                            int candidateY = tab.yPosition + tab.height;
                             if (candidateY > targetY) {
                                 targetY = candidateY;
                             }
                             //重新应用tab的Y位置
-                            tab.y = targetY;
+                            tab.yPosition = targetY;
                             int baseOffsetY = baseY % tab.height;
-                            tab.y = tab.y - (tab.y % tab.height) + baseOffsetY;
+                            tab.yPosition = tab.yPosition - (tab.yPosition % tab.height) + baseOffsetY;
                         }
                     }
                 }
@@ -81,7 +77,7 @@ public class MixinGuiPatternTerm extends GuiMEMonitorable {
 
     @Inject(method = "drawFG", at = @At("HEAD"), remap = false)
     private void injectDrawFG(int offsetX, int offsetY, int mouseX, int mouseY, CallbackInfo ci) {
-        ecoaeextension$uploadPatternButton.visible = container.isCraftingMode();
+        ecoaeextension$uploadPatternButton.visible = false;  // isCraftingMode() not in AE2 rv3
     }
 
 }

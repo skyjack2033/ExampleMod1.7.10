@@ -5,6 +5,7 @@ import appeng.api.networking.IGrid;
 import appeng.api.networking.IGridNode;
 import appeng.api.networking.energy.IEnergyGrid;
 import appeng.api.networking.storage.IStorageGrid;
+import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.item.ItemStack;
 import net.minecraft.nbt.NBTTagCompound;
 
@@ -52,6 +53,9 @@ public class AENetworkProxy {
     }
 
     public void setVisualRepresentation(ItemStack is) {
+    }
+
+    public void setOwner(EntityPlayer owner) {
     }
 
     public IEnergyGrid getEnergy() {

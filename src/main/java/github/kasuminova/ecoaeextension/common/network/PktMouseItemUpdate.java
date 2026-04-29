@@ -35,14 +35,14 @@ public class PktMouseItemUpdate implements IMessage, IMessageHandler<PktMouseIte
     @Override
     public IMessage onMessage(final PktMouseItemUpdate message, final MessageContext ctx) {
         if (FMLCommonHandler.instance().getSide().isClient()) {
-            Minecraft.getMinecraft().addScheduledTask(() -> processPacket(message));
+            processPacket(message);
         }
         return null;
     }
 
     @SideOnly(Side.CLIENT)
     private static void processPacket(final PktMouseItemUpdate message) {
-        Minecraft.getMinecraft().player.inventory.setItemStack(message.stack);
+        Minecraft.getMinecraft().thePlayer.inventory.setItemStack(message.stack);
     }
 
 }

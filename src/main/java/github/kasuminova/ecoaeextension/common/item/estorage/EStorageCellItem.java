@@ -25,6 +25,11 @@ public class EStorageCellItem extends EStorageCell<IAEItemStack> {
     }
 
     @Override
+    public int getBytesPerType(@Nonnull final ItemStack cellItem) {
+        return byteMultiplier * 1024;
+    }
+
+    @Override
     public int BytePerType(@Nonnull final ItemStack cellItem) {
         return byteMultiplier * 1024;
     }

@@ -11,6 +11,7 @@ import github.kasuminova.ecoaeextension.common.crafttweaker.util.NovaEngUtils;
 import net.minecraft.client.gui.GuiScreen;
 
 import net.minecraft.util.ResourceLocation;
+import org.lwjgl.opengl.GL11;
 
 @SuppressWarnings("unused")
 public class DragBar extends DynamicWidget {
@@ -88,7 +89,6 @@ public class DragBar extends DynamicWidget {
         dragBarButton.update(gui);
     }
 
-    @Override
     public void preRender(final WidgetGui gui, final RenderSize renderSize, final RenderPos renderPos, final MousePos mousePos) {
         if (!dragBarButton.isMouseDown()) {
             return;
@@ -193,7 +193,6 @@ public class DragBar extends DynamicWidget {
         return false;
     }
 
-    @Override
     public boolean onMouseReleased(final MousePos mousePos, final RenderPos renderPos) {
         return dragBarButton.onMouseReleased(mousePos, renderPos);
     }
@@ -541,25 +540,25 @@ public class DragBar extends DynamicWidget {
             float offsetX = ((int) width - width) / 2F;
 
             // Dark Animation
-            GlStateManager.color(1.0F - darkValue, 1.0F - darkValue, 1.0F - darkValue);
+            GL11.glColor4f(1.0F - darkValue, 1.0F - darkValue, 1.0F - darkValue, 1.0F);
             // Render Button
-            gui.drawTexturedModalRect(renderPos.posX() + offsetX, renderPos.posY(), buttonLeftTexOffsetX, buttonLeftTexOffsetY, buttonLeftTexWidth, (int) height);
+            gui.drawTexturedModalRect((int) (renderPos.posX() + offsetX), (int) renderPos.posY(), buttonLeftTexOffsetX, buttonLeftTexOffsetY, buttonLeftTexWidth, (int) height);
             offsetX += buttonLeftTexWidth;
 
             while (offsetX + buttonRightTexWidth < width) {
-                gui.drawTexturedModalRect(renderPos.posX() + offsetX, renderPos.posY(), buttonMidTexOffsetX, buttonMidTexOffsetY, 1, (int) height);
+                gui.drawTexturedModalRect((int) (renderPos.posX() + offsetX), (int) renderPos.posY(), buttonMidTexOffsetX, buttonMidTexOffsetY, 1, (int) height);
                 offsetX++;
             }
             if (offsetX < width - buttonRightTexWidth) {
-                gui.drawTexturedModalRect(renderPos.posX() + offsetX - (width - buttonRightTexWidth - offsetX), renderPos.posY(), buttonMidTexOffsetX, buttonMidTexOffsetY, 1, (int) height);
+                gui.drawTexturedModalRect((int) (renderPos.posX() + offsetX - (width - buttonRightTexWidth - offsetX)), (int) renderPos.posY(), buttonMidTexOffsetX, buttonMidTexOffsetY, 1, (int) height);
                 offsetX += (width - buttonRightTexWidth - offsetX);
             }
-            gui.drawTexturedModalRect(renderPos.posX() + offsetX, renderPos.posY(), buttonRightTexOffsetX, buttonRightTexOffsetY, buttonRightTexWidth, (int) height);
-            GlStateManager.color(1.0F, 1.0F, 1.0F);
+            gui.drawTexturedModalRect((int) (renderPos.posX() + offsetX), (int) renderPos.posY(), buttonRightTexOffsetX, buttonRightTexOffsetY, buttonRightTexWidth, (int) height);
+            GL11.glColor4f(1.0F, 1.0F, 1.0F, 1.0F);
 
             // Render Content
             String formattedValue = NovaEngUtils.formatDouble(cachedValue, 2);
-            gui.mc.fontRenderer.drawString(formattedValue, (float) renderPos.posX() + ((width - contentWidth) / 2F), (float) renderPos.posY(), 0xFFFFFF, false);
+            gui.mc.fontRenderer.drawString(formattedValue, (int) ((float) renderPos.posX() + ((width - contentWidth) / 2F)), (int) renderPos.posY(), 0xFFFFFF, false);
         }
 
         @Override
@@ -591,7 +590,6 @@ public class DragBar extends DynamicWidget {
             return true;
         }
 
-        @Override
         public boolean onMouseReleased(final MousePos mousePos, final RenderPos renderPos) {
             mouseDown = false;
             lastColorUpdateTime = System.currentTimeMillis();

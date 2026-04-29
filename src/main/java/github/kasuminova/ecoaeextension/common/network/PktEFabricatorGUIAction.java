@@ -37,7 +37,7 @@ public class PktEFabricatorGUIAction implements IMessage, IMessageHandler<PktEFa
 
     @Override
     public IMessage onMessage(final PktEFabricatorGUIAction message, final MessageContext ctx) {
-        final EntityPlayerMP player = ctx.getServerHandler().player;
+        final EntityPlayerMP player = ctx.getServerHandler().playerEntity;
         final Action action = message.action;
 
         ModularMachinery.EXECUTE_MANAGER.addSyncTask(() -> {

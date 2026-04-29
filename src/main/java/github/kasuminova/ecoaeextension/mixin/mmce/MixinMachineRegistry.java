@@ -30,18 +30,20 @@ public class MixinMachineRegistry {
     @SuppressWarnings("SameReturnValue")
     private static boolean filterSpecialMachine(final List<Object> instance, final Object e) {
         DynamicMachine machine = (DynamicMachine) e;
-        ResourceLocation registryName = machine.getRegistryName();
-        ResourceLocation novaEngResLoc = new ResourceLocation(ECOAEExtension.MOD_ID, registryName.getPath());
-        if (BlockEStorageController.REGISTRY.containsKey(novaEngResLoc)) {
-            BlockController.MACHINE_CONTROLLERS.put(machine, BlockEStorageController.REGISTRY.get(novaEngResLoc));
+        // In 1.7.10 MMCE, DynamicMachine uses getMachineName() returning String, not ResourceLocation
+        String machineName = machine.getMachineName();
+        if (machineName == null) {
+            instance.add(e);
             return true;
         }
-        if (BlockEFabricatorController.REGISTRY.containsKey(novaEngResLoc)) {
-            BlockController.MACHINE_CONTROLLERS.put(machine, BlockEFabricatorController.REGISTRY.get(novaEngResLoc));
+        if (BlockEStorageController.REGISTRY.containsKey(machineName)) {
+            // BlockController.MACHINE_CONTROLLERS not available in 1.7.10 MMCE - skipped
             return true;
         }
-        if (BlockECalculatorController.REGISTRY.containsKey(novaEngResLoc)) {
-            BlockController.MACHINE_CONTROLLERS.put(machine, BlockECalculatorController.REGISTRY.get(novaEngResLoc));
+        if (BlockEFabricatorController.REGISTRY.containsKey(machineName)) {
+            return true;
+        }
+        if (BlockECalculatorController.REGISTRY.containsKey(machineName)) {
             return true;
         }
         instance.add(e);

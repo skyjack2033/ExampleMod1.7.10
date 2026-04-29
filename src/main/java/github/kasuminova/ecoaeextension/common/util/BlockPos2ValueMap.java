@@ -21,7 +21,7 @@ public class BlockPos2ValueMap<V> implements Map<BlockPos, V> {
 
     @Override
     public boolean isEmpty() {
-        return internal.stackSize <= 0;
+        return internal.isEmpty();
     }
 
     @Override

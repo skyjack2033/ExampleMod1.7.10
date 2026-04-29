@@ -66,6 +66,7 @@ public class EStorageEventHandler {
         if (!(te instanceof EStorageCellDrive)) {
             return;
         }
+        EStorageCellDrive drive = (EStorageCellDrive) te;
 
         EStorageController controller = drive.getController();
         if (controller != null) {
@@ -108,9 +109,11 @@ public class EStorageEventHandler {
         if (!(event.player instanceof EntityPlayerMP)) {
             return;
         }
-        if (!(player.openContainer instanceof ContainerEStorageController containerESController)) {
+        EntityPlayerMP player = (EntityPlayerMP) event.player;
+        if (!(player.openContainer instanceof ContainerEStorageController)) {
             return;
         }
+        ContainerEStorageController containerESController = (ContainerEStorageController) player.openContainer;
         World world = player.getEntityWorld();
         int tickExisted = containerESController.getTickExisted();
         containerESController.setTickExisted(tickExisted + 1);

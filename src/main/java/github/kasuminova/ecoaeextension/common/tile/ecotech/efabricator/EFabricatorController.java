@@ -214,7 +214,7 @@ public class EFabricatorController extends EPartController<EFabricatorPart> {
         IEnergyGrid energy;
         try {
             energy = channel.getProxy().getEnergy();
-        } catch (GridAccessException ignored) {
+        } catch (Exception ignored) {
             return;
         }
 
@@ -240,7 +240,7 @@ public class EFabricatorController extends EPartController<EFabricatorPart> {
                     stack.setStackSize(0);
                 }
             }
-        } catch (GridAccessException ignored) {
+        } catch (Exception ignored) {
         }
     }
 

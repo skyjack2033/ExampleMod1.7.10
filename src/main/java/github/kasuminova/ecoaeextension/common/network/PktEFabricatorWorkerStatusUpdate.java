@@ -60,7 +60,7 @@ public class PktEFabricatorWorkerStatusUpdate implements IMessage, IMessageHandl
             return;
         }
 
-        WorldClient world = Minecraft.getMinecraft().world;
+        WorldClient world = Minecraft.getMinecraft().theWorld;
         if (world == null) {
             return;
         }

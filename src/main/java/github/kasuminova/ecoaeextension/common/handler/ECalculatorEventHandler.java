@@ -41,9 +41,11 @@ public class ECalculatorEventHandler {
         if (!(event.player instanceof EntityPlayerMP)) {
             return;
         }
-        if (!(player.openContainer instanceof ContainerECalculatorController containerECController)) {
+        EntityPlayerMP player = (EntityPlayerMP) event.player;
+        if (!(player.openContainer instanceof ContainerECalculatorController)) {
             return;
         }
+        ContainerECalculatorController containerECController = (ContainerECalculatorController) player.openContainer;
         World world = player.getEntityWorld();
         int tickExisted = containerECController.getTickExisted();
         containerECController.setTickExisted(tickExisted + 1);
@@ -88,6 +90,7 @@ public class ECalculatorEventHandler {
         if (!(te instanceof ECalculatorCellDrive)) {
             return;
         }
+        ECalculatorCellDrive drive = (ECalculatorCellDrive) te;
 
         ECalculatorController controller = drive.getController();
         if (controller != null) {

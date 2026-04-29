@@ -5,6 +5,7 @@ import appeng.api.networking.security.BaseActionSource;
 import appeng.api.storage.IMEInventory;
 import appeng.api.storage.data.IAEStack;
 import net.minecraft.entity.player.EntityPlayer;
+import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
 import net.minecraft.nbt.NBTTagCompound;
 
@@ -17,4 +18,11 @@ public class Platform {
     public static <StackType extends IAEStack> StackType poweredInsert(IEnergySource energy, IMEInventory<StackType> inv, StackType stack, BaseActionSource source) { return stack; }
     public static <StackType extends IAEStack> StackType poweredExtraction(IEnergySource energy, IMEInventory<StackType> inv, StackType stack, BaseActionSource source) { return null; }
     public static NBTTagCompound openNbtData(ItemStack i) { return i.getTagCompound(); }
+    public static ItemStack getContainerItem(ItemStack stack) {
+        if (stack == null || stack.getItem() == null) return null;
+        if (!stack.getItem().hasContainerItem()) return null;
+        Item container = stack.getItem().getContainerItem();
+        if (container == null) return null;
+        return new ItemStack(container);
+    }
 }

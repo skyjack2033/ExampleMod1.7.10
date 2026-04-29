@@ -30,7 +30,7 @@ public class MachineRegistry {
     }
 
     public DynamicMachine getMachine(ResourceLocation name) {
-        return loadedMachines.get(name == null ? null : name.getPath());
+        return loadedMachines.get(name == null ? null : name.getResourcePath());
     }
 
     public Collection<DynamicMachine> getLoadedMachines() {

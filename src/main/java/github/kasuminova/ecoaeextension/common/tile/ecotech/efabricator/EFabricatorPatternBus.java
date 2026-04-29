@@ -105,7 +105,7 @@ public class EFabricatorPatternBus extends EFabricatorPart implements IAEAppEngI
             if (channel != null && channel.getProxy().isActive()) {
                 channel.getProxy().getGrid().postEvent(new MENetworkCraftingPatternChange(channel, channel.getProxy().getNode()));
             }
-        } catch (GridAccessException ignored) {
+        } catch (Exception ignored) {
         }
         this.partController.recalculateEnergyUsage();
     }

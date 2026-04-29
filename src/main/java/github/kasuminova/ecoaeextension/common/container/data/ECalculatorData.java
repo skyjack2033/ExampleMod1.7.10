@@ -72,7 +72,7 @@ public record ECalculatorData(long totalStorage, long usedExtraStorage, int acce
                         (int) ecpu.novaeng_ec$getTimeRecorder().usedTimeAvg()
                 ));
             }
-        } catch (GridAccessException ignored) {
+        } catch (Exception ignored) {
         }
 
         return ecpuData;

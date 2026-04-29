@@ -4,8 +4,7 @@ import github.kasuminova.ecoaeextension.common.block.ecotech.ecalculator.BlockEC
 import github.kasuminova.ecoaeextension.common.block.ecotech.ecalculator.BlockECalculatorTransmitterBus;
 import github.kasuminova.ecoaeextension.common.block.ecotech.ecalculator.prop.Levels;
 import github.kasuminova.ecoaeextension.common.block.ecotech.ecalculator.prop.TransmitterBusLinkLevel;
-import github.kasuminova.ecoaeextension.common.block.prop.FacingProp;
-import net.minecraft.block.state.IBlockState;
+import net.minecraft.block.Block;
 import net.minecraft.nbt.NBTTagCompound;
 import net.minecraftforge.common.util.ForgeDirection;
 import github.kasuminova.ecoaeextension.common.util.BlockPos;
@@ -73,25 +72,20 @@ public class ECalculatorTransmitterBus extends ECalculatorPart {
     }
 
     protected boolean disconnectCellDrive(final ForgeDirection disconnectFacing) {
-        World world = getWorld();
+        if (worldObj == null) return false;
         BlockPos disconnectPos = getPos().offset(disconnectFacing);
-        IBlockState disconnectBlock = world.getBlockState(disconnectPos);
-        if (!(disconnectBlock.getBlock() instanceof BlockECalculatorCellDrive)) {
+        Block block = worldObj.getBlock(disconnectPos.getX(), disconnectPos.getY(), disconnectPos.getZ());
+        if (!(block instanceof BlockECalculatorCellDrive)) {
             return false;
         }
 
-        ForgeDirection facing = disconnectBlock.getValue(FacingProp.HORIZONTALS);
-        IBlockState thisBlock = world.getBlockState(getPos());
-        if (!(thisBlock.getBlock() instanceof BlockECalculatorTransmitterBus)) {
-            return false;
-        }
-
-        ForgeDirection currentFacing = thisBlock.getValue(FacingProp.HORIZONTALS);
+        ForgeDirection facing = getFacingFromMeta(worldObj.getBlockMetadata(disconnectPos.getX(), disconnectPos.getY(), disconnectPos.getZ()));
+        ForgeDirection currentFacing = getFacingFromMeta(worldObj.getBlockMetadata(xCoord, yCoord, zCoord));
         if (facing != currentFacing) {
             return false;
         }
 
-        if (!(world.getTileEntity(disconnectPos) instanceof ECalculatorCellDrive drive)) {
+        if (!(worldObj.getTileEntity(disconnectPos.getX(), disconnectPos.getY(), disconnectPos.getZ()) instanceof ECalculatorCellDrive drive)) {
             return false;
         }
 
@@ -100,25 +94,20 @@ public class ECalculatorTransmitterBus extends ECalculatorPart {
     }
 
     protected boolean connectCellDrive(final ForgeDirection connectFacing) {
-        World world = getWorld();
+        if (worldObj == null) return false;
         BlockPos connectPos = getPos().offset(connectFacing);
-        IBlockState connectBlock = world.getBlockState(connectPos);
-        if (!(connectBlock.getBlock() instanceof BlockECalculatorCellDrive)) {
+        Block block = worldObj.getBlock(connectPos.getX(), connectPos.getY(), connectPos.getZ());
+        if (!(block instanceof BlockECalculatorCellDrive)) {
             return false;
         }
 
-        ForgeDirection facing = connectBlock.getValue(FacingProp.HORIZONTALS);
-        IBlockState thisBlock = world.getBlockState(getPos());
-        if (!(thisBlock.getBlock() instanceof BlockECalculatorTransmitterBus)) {
-            return false;
-        }
-
-        ForgeDirection currentFacing = thisBlock.getValue(FacingProp.HORIZONTALS);
+        ForgeDirection facing = getFacingFromMeta(worldObj.getBlockMetadata(connectPos.getX(), connectPos.getY(), connectPos.getZ()));
+        ForgeDirection currentFacing = getFacingFromMeta(worldObj.getBlockMetadata(xCoord, yCoord, zCoord));
         if (facing != currentFacing) {
             return false;
         }
 
-        if (!(world.getTileEntity(connectPos) instanceof ECalculatorCellDrive drive)) {
+        if (!(worldObj.getTileEntity(connectPos.getX(), connectPos.getY(), connectPos.getZ()) instanceof ECalculatorCellDrive drive)) {
             return false;
         }
 
@@ -184,6 +173,21 @@ public class ECalculatorTransmitterBus extends ECalculatorPart {
 
     public boolean isDownConnected() {
         return this.downConnected;
+    }
+
+    /**
+     * Converts block metadata to a horizontal ForgeDirection.
+     * Convention matches BlockECalculatorCellDrive.onBlockPlacedBy / BlockECalculatorTransmitterBus.onBlockPlacedBy:
+     * 0=NORTH, 1=EAST, 2=SOUTH, 3=WEST
+     */
+    private static ForgeDirection getFacingFromMeta(int meta) {
+        switch (meta & 3) {
+            case 0: return ForgeDirection.NORTH;
+            case 1: return ForgeDirection.EAST;
+            case 2: return ForgeDirection.SOUTH;
+            case 3: return ForgeDirection.WEST;
+            default: return ForgeDirection.NORTH;
+        }
     }
 
 }

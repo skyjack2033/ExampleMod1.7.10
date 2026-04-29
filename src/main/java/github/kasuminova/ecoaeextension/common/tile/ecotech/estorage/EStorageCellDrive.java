@@ -291,7 +291,7 @@ public class EStorageCellDrive extends EStoragePart implements ISaveProvider, IA
                 postChanges(gs, removed, added, source);
             }
             proxy.getGrid().postEvent(new MENetworkCellArrayUpdate());
-        } catch (final GridAccessException ignored) {
+        } catch (final Exception ignored) {
         }
 
     }
@@ -325,7 +325,7 @@ public class EStorageCellDrive extends EStoragePart implements ISaveProvider, IA
                 postChanges(gs, removed, null, source);
             }
             proxy.getGrid().postEvent(new MENetworkCellArrayUpdate());
-        } catch (final GridAccessException ignored) {
+        } catch (final Exception ignored) {
         }
     }
 

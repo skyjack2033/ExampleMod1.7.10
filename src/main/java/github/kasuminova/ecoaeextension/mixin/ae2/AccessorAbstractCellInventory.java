@@ -1,35 +1,29 @@
 package github.kasuminova.ecoaeextension.mixin.ae2;
 
-import appeng.me.storage.AbstractCellInventory;
+import appeng.me.storage.CellInventory;
 import net.minecraft.nbt.NBTTagCompound;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.gen.Accessor;
 
-@Mixin(value = AbstractCellInventory.class, remap = false)
+@Mixin(value = CellInventory.class, remap = false)
 public interface AccessorAbstractCellInventory {
 
-    @Accessor
+    @Accessor("tagCompound")
     NBTTagCompound getTagCompound();
 
-    @Accessor
+    @Accessor("maxTypes")
     int getMaxItemTypes();
 
-    @Accessor
+    @Accessor("storedTypes")
     short getStoredItemTypes();
 
-    @Accessor
+    @Accessor("storedTypes")
     void setStoredItemTypes(short storedItemTypes);
 
-    @Accessor
+    @Accessor("storedCount")
     long getStoredItemCount();
 
-    @Accessor
+    @Accessor("storedCount")
     void setStoredItemCount(long storedItemCount);
-
-    @Accessor
-    void setIsPersisted(boolean isPersisted);
-
-    @Accessor
-    boolean getIsPersisted();
 
 }

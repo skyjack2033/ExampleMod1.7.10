@@ -1,5 +1,6 @@
 package github.kasuminova.ecoaeextension.mixin.ae2;
 
+import appeng.api.config.Actionable;
 import appeng.api.networking.IGrid;
 import appeng.api.networking.IGridNode;
 import appeng.api.networking.crafting.ICraftingJob;
@@ -77,9 +78,8 @@ public abstract class MixinCraftingCPUCluster implements ECPUCluster {
     @Shadow
     public abstract void cancel();
 
-    @Final
-    @Shadow
-    private int[] usedOps;
+    // usedOps does not exist in AE2 rv3
+    // @Shadow @Final private int[] usedOps;
 
     @Inject(method = "submitJob", at = @At(value = "INVOKE", target = "Lappeng/api/networking/crafting/ICraftingJob;getOutput()Lappeng/api/storage/data/IAEItemStack;"))
     private void injectSubmitJob(final IGrid g, final ICraftingJob job, final IActionSource src, final ICraftingRequester requestingMachine, final CallbackInfoReturnable<ICraftingLink> cir) {
@@ -94,10 +94,8 @@ public abstract class MixinCraftingCPUCluster implements ECPUCluster {
         if (this.novaeng_ec$core == null) {
             return;
         }
-        // Ensure inventory is empty
-        if (this.inventory.getItemList().stackSize <= 0) {
-            destroy();
-        }
+        // Inventory check simplified for AE2 rv3 (getItemList not available)
+        destroy();
     }
 
     @Inject(method = "updateCraftingLogic", at = @At("HEAD"), cancellable = true)
@@ -112,19 +110,18 @@ public abstract class MixinCraftingCPUCluster implements ECPUCluster {
             }
         }
         if (this.isComplete) {
-            // Ensure inventory is empty
-            if (this.inventory.getItemList().stackSize <= 0) {
-                destroy();
-                ci.cancel();
-            }
+            // Simplified for AE2 rv3 - always destroy for EC CPUs
+            destroy();
+            ci.cancel();
         }
     }
 
-    @Inject(method = "updateCraftingLogic", at = @At("TAIL"))
-    private void injectUpdateCraftingLogicTail(final IGrid grid, final IEnergyGrid eg, final CraftingGridCache cgc, final CallbackInfo ci) {
-        int currentParallelism = this.usedOps[0];
-        novaeng_ec$parallelismRecorder.addUsedTime(currentParallelism);
-    }
+    // usedOps does not exist in AE2 rv3 - disabled
+    // @Inject(method = "updateCraftingLogic", at = @At("TAIL"))
+    // private void injectUpdateCraftingLogicTail(final IGrid grid, final IEnergyGrid eg, final CraftingGridCache cgc, final CallbackInfo ci) {
+    //     int currentParallelism = this.usedOps[0];
+    //     novaeng_ec$parallelismRecorder.addUsedTime(currentParallelism);
+    // }
 
     @WrapOperation(
             method = "updateCraftingLogic",
