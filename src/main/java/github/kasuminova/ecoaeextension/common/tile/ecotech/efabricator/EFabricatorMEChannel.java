@@ -227,12 +227,6 @@ public class EFabricatorMEChannel extends EFabricatorPart implements ICraftingPr
     public void gridChanged() {
     }
 
-    @Nullable
-    public IGridNode getGridNode(@Nonnull final AEPartLocation dir) {
-        return proxy.getNode();
-    }
-
-    @Override
     public IGridNode getGridNode(final ForgeDirection dir) {
         return proxy.getNode();
     }

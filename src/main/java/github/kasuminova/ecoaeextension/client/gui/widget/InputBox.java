@@ -9,10 +9,11 @@ import github.kasuminova.ecoaeextension.common.util.BiFunction2Bool;
 import github.kasuminova.ecoaeextension.common.util.NumberUtils;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.FontRenderer;
-import net.minecraft.client.gui.GuiScreen;
 import net.minecraft.client.gui.GuiTextField;
 
 import org.lwjgl.input.Keyboard;
+
+import org.lwjgl.opengl.GL11;
 
 import java.util.List;
 import java.util.OptionalDouble;
@@ -25,7 +26,7 @@ import java.util.function.Function;
 
 public class InputBox extends DynamicWidget {
 
-    protected final GuiTextField field = new GuiTextField(-1, Minecraft.getMinecraft().fontRenderer, 0, 0, 100, 14);
+    protected final GuiTextField field = new GuiTextField(Minecraft.getMinecraft().fontRenderer, 0, 0, 100, 14);
 
     protected InputType inputType = InputType.STRING;
 
@@ -49,15 +50,15 @@ public class InputBox extends DynamicWidget {
 
         field.width = renderSize.width();
         field.height = Math.min(height, fontHeight);
-        field.x = renderPos.posX();
-        field.y = renderPos.posY() + heightOffset;
+        field.xPosition = renderPos.posX();
+        field.yPosition = renderPos.posY() + heightOffset;
         field.drawTextBox();
-        if (!field.isFocused() && field.getText().stackSize <= 0) {
+        if (!field.isFocused() && field.getText().isEmpty()) {
             FontRenderer fr = Minecraft.getMinecraft().fontRenderer;
-            fr.drawStringWithShadow(prompt, field.x, field.y, 0xFFFFFF);
+            fr.drawStringWithShadow(prompt, field.xPosition, field.yPosition, 0xFFFFFF);
         }
-        GlStateManager.color(1F, 1F, 1F, 1F);
-        GlStateManager.enableBlend();
+        GL11.glColor4f(1F, 1F, 1F, 1F);
+        GL11.glEnable(GL11.GL_BLEND);
     }
 
     @Override
@@ -67,7 +68,7 @@ public class InputBox extends DynamicWidget {
         }
 
         String text = field.getText();
-        if (text != null && text.stackSize > 0 && keyCode == Keyboard.KEY_RETURN) {
+        if (text != null && !text.isEmpty() && keyCode == Keyboard.KEY_RETURN) {
             if (processUserConfirm(text)) {
                 if (onContentChange != null) {
                     onContentChange.accept(this, field.getText());
@@ -77,10 +78,8 @@ public class InputBox extends DynamicWidget {
             return false;
         }
 
-        if (GuiScreen.isKeyComboCtrlC(keyCode) ||
-                GuiScreen.isKeyComboCtrlV(keyCode) ||
-                GuiScreen.isKeyComboCtrlX(keyCode) ||
-                GuiScreen.isKeyComboCtrlA(keyCode) ||
+        boolean isCtrlDown = Keyboard.isKeyDown(Keyboard.KEY_LCONTROL) || Keyboard.isKeyDown(Keyboard.KEY_RCONTROL);
+        if ((isCtrlDown && (keyCode == Keyboard.KEY_C || keyCode == Keyboard.KEY_V || keyCode == Keyboard.KEY_X || keyCode == Keyboard.KEY_A)) ||
                 keyCode == Keyboard.KEY_BACK ||
                 keyCode == Keyboard.KEY_DELETE ||
                 keyCode == Keyboard.KEY_LEFT ||
@@ -108,7 +107,7 @@ public class InputBox extends DynamicWidget {
             case NUMBER: {
                 boolean result = processNumberTypeInput(typedChar, keyCode);
                 String newText = field.getText();
-                if (newText.stackSize <= 0 || NumberUtils.canParse(newText)) {
+                if (newText.isEmpty() || NumberUtils.canParse(newText)) {
                     field.setTextColor(0xFFFFFF);
                 } else {
                     field.setTextColor(0xFF0000);
@@ -130,7 +129,7 @@ public class InputBox extends DynamicWidget {
         String text = field.getText();
 
         // 如果是负号且当前输入为空，允许输入
-        if (typedChar == '-' && text.stackSize <= 0) {
+        if (typedChar == '-' && text.isEmpty()) {
             field.setText("-"); // 直接设置负号
             return true;
         }

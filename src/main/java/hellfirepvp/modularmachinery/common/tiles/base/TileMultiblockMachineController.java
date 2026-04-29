@@ -46,8 +46,16 @@ public class TileMultiblockMachineController extends TileEntitySynchronized {
         return null;
     }
 
-    public Object getFoundMachine() {
+    public DynamicMachine getFoundMachine() {
         return foundMachine;
+    }
+
+    public ForgeDirection getControllerRotation() {
+        return controllerRotation;
+    }
+
+    public void setControllerRotation(ForgeDirection rotation) {
+        this.controllerRotation = rotation;
     }
 
     public void setFoundMachine(DynamicMachine machine) {

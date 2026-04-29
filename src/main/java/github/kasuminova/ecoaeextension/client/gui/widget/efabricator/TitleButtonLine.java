@@ -39,7 +39,7 @@ public class TitleButtonLine extends Row {
                 .setTexture(TextureProperties.of(151, 75))
                 .setHoveredTexture(TextureProperties.of(167, 75))
                 .setTextureLocation(GuiEFabricatorController.TEXTURES_ELEMENTS)
-                .setOnClickedListener(button -> Minecraft.getMinecraft().addScheduledTask(() -> Minecraft.getMinecraft().player.closeScreen()))
+                .setOnClickedListener(button -> Minecraft.getMinecraft().thePlayer.closeScreen())
                 .setWidthHeight(15, 11));
     }
 

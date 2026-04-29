@@ -15,7 +15,7 @@ import javax.annotation.Nonnull;
 public abstract class BlockECalculator extends Block {
 
     protected BlockECalculator() {
-        super(Material.IRON);
+        super(Material.iron);
         this.translucent = true;
         this.fullBlock = false;
         this.lightOpacity = 0;

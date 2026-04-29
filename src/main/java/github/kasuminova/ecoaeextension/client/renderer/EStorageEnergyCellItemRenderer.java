@@ -20,7 +20,7 @@ public class EStorageEnergyCellItemRenderer {
 
     private static double getFillFactor(ItemStack stack) {
         NBTTagCompound tag = stack.getTagCompound();
-        if (tag == null || tag.stackSize <= 0) {
+        if (tag == null) {
             return 0;
         }
 

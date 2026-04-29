@@ -20,10 +20,11 @@ public abstract class WidgetContainer extends DynamicWidget {
         widgets.add(widget);
     }
 
-    public void addWidgets(DynamicWidget... widgets) {
+    public WidgetContainer addWidgets(DynamicWidget... widgets) {
         for (DynamicWidget widget : widgets) {
             addWidget(widget);
         }
+        return this;
     }
 
     @Override

@@ -76,7 +76,8 @@ public class PatternPanel extends SizedColumn {
 
     @Override
     public boolean onGuiEvent(final GuiEvent event) {
-        if (event instanceof EFPatternSearchGUIUpdateEvent efGUIUpdateEvent) {
+        if (event instanceof EFPatternSearchGUIUpdateEvent) {
+            EFPatternSearchGUIUpdateEvent efGUIUpdateEvent = (EFPatternSearchGUIUpdateEvent) event;
             GuiEFabricatorPatternSearch efGui = efGUIUpdateEvent.getEFGui();
             EFabricatorPatternData data = efGui.getData();
             boolean fullUpdate = efGUIUpdateEvent.isFullUpdate();
@@ -87,7 +88,7 @@ public class PatternPanel extends SizedColumn {
             final AtomicBoolean somethingRemoved = new AtomicBoolean(fullUpdate);
             final AtomicBoolean rebuildWidget = new AtomicBoolean(fullUpdate);
             data.patterns().forEach((pos, patternSet) -> {
-                if (patternSet.stackSize <= 0) {
+                if (patternSet.isEmpty()) {
                     return;
                 }
 
@@ -127,7 +128,7 @@ public class PatternPanel extends SizedColumn {
                         }
 
                         IAEItemStack[] inputs = details.getCondensedInputs();
-                        IAEItemStack primaryOutput = details.getPrimaryOutput();
+                        IAEItemStack primaryOutput = details.getOutputs()[0];
 
                         for (final IAEItemStack input : inputs) {
                             String displayName = getClearColorName(input);
@@ -141,7 +142,7 @@ public class PatternPanel extends SizedColumn {
                 }
             } else {
                 data.patterns().forEach((pos, patternSet) -> {
-                    if (patternSet.stackSize <= 0) {
+                    if (patternSet.isEmpty()) {
                         return;
                     }
 
@@ -157,7 +158,7 @@ public class PatternPanel extends SizedColumn {
                         }
 
                         IAEItemStack[] inputs = details.getCondensedInputs();
-                        IAEItemStack primaryOutput = details.getPrimaryOutput();
+                        IAEItemStack primaryOutput = details.getOutputs()[0];
 
                         for (final IAEItemStack input : inputs) {
                             String displayName = getClearColorName(input);
@@ -172,7 +173,7 @@ public class PatternPanel extends SizedColumn {
             }
 
             if (rebuildWidget.get()) {
-                if (inputSearchContent.trim().stackSize <= 0 && outputSearchContent.trim().stackSize <= 0) {
+                if (inputSearchContent.trim().isEmpty() && outputSearchContent.trim().isEmpty()) {
                     rebuildSlots();
                 } else {
                     Set<PatternSlot> matched = new ObjectLinkedOpenHashSet<>();
@@ -183,10 +184,11 @@ public class PatternPanel extends SizedColumn {
             }
         }
 
-        if (event instanceof EFPatternSearchContentUpdateEvent searchUpdateEvent) {
+        if (event instanceof EFPatternSearchContentUpdateEvent) {
+            EFPatternSearchContentUpdateEvent searchUpdateEvent = (EFPatternSearchContentUpdateEvent) event;
             inputSearchContent = searchUpdateEvent.getInputContent();
             outputSearchContent = searchUpdateEvent.getOutputContent();
-            if (inputSearchContent.trim().stackSize <= 0 && outputSearchContent.trim().stackSize <= 0) {
+            if (inputSearchContent.trim().isEmpty() && outputSearchContent.trim().isEmpty()) {
                 rebuildSlots();
                 return true;
             }
@@ -243,7 +245,7 @@ public class PatternPanel extends SizedColumn {
     }
 
     private static String getClearColorName(final IAEItemStack input) {
-        return COLOR_CODE_PATTERN.matcher(input.getDefinition().getDisplayName()).replaceAll("");
+        return COLOR_CODE_PATTERN.matcher(input.getItemStack().getDisplayName()).replaceAll("");
     }
 
     private static class InternalColumn extends ScrollingColumn {
@@ -319,7 +321,8 @@ public class PatternPanel extends SizedColumn {
 
         @Override
         public boolean onMouseClick(final MousePos mousePos, final RenderPos renderPos, final int mouseButton) {
-            if (!Minecraft.getMinecraft().player.inventory.getItemStack().stackSize <= 0) {
+            ItemStack heldItem = Minecraft.getMinecraft().thePlayer.inventory.getItemStack();
+            if (heldItem != null && heldItem.stackSize > 0) {
                 ECOAEExtension.NET_CHANNEL.sendToServer(new PktEFabricatorPatternSearchGUIAction(
                         PktEFabricatorPatternSearchGUIAction.Action.PUT_PATTERN
                 ));
@@ -330,7 +333,8 @@ public class PatternPanel extends SizedColumn {
 
         @Override
         public List<String> getHoverTooltips(final WidgetGui widgetGui, final MousePos mousePos) {
-            if (!Minecraft.getMinecraft().player.inventory.getItemStack().stackSize <= 0) {
+            ItemStack heldItem = Minecraft.getMinecraft().thePlayer.inventory.getItemStack();
+            if (heldItem != null && heldItem.stackSize > 0) {
                 return Collections.singletonList(I18n.format("gui.efabricator.pattern_search.put_pattern"));
             }
             return super.getHoverTooltips(widgetGui, mousePos);

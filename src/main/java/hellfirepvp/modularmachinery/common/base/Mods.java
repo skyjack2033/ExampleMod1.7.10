@@ -4,7 +4,9 @@ public enum Mods {
     TOP(false),
     AE2(false),
     MEKENG(false),
-    CRAFTTWEAKER(false);
+    CRAFTTWEAKER(false),
+    MBD(false),
+    COMPONENT_MODEL_HIDER(false);
 
     private final boolean present;
 

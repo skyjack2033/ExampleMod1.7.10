@@ -13,8 +13,6 @@ import github.kasuminova.ecoaeextension.client.gui.widget.ecalculator.event.ECGU
 import github.kasuminova.ecoaeextension.common.container.ContainerECalculatorController;
 import github.kasuminova.ecoaeextension.common.container.data.ECalculatorData;
 import github.kasuminova.ecoaeextension.common.tile.ecotech.ecalculator.ECalculatorController;
-import lombok.Getter;
-
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.util.ResourceLocation;
 import org.lwjgl.opengl.GL11;
@@ -28,8 +26,11 @@ public class GuiECalculatorController extends GuiContainerDynamic<ContainerECalc
             0, 0, 255, 221
     );
 
-    @Getter
     private ECalculatorData data = null;
+
+    public ECalculatorData getData() {
+        return data;
+    }
 
     public GuiECalculatorController(final ECalculatorController controller, final EntityPlayer opening) {
         super(new ContainerECalculatorController(controller, opening));

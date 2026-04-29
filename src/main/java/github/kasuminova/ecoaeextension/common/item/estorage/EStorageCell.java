@@ -15,7 +15,6 @@ import appeng.util.Platform;
 import github.kasuminova.ecoaeextension.common.block.ecotech.estorage.prop.DriveStorageLevel;
 import github.kasuminova.ecoaeextension.common.core.CreativeTabNovaEng;
 import github.kasuminova.ecoaeextension.common.estorage.EStorageCellHandler;
-import lombok.Getter;
 import net.minecraft.client.resources.I18n;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.inventory.IInventory;
@@ -27,11 +26,17 @@ import javax.annotation.Nonnull;
 import java.util.List;
 
 public abstract class EStorageCell<T extends IAEStack<T>> extends AEBaseItem implements IStorageCell {
-    @Getter
     protected final DriveStorageLevel level;
     protected final int totalBytes;
-    @Getter
     protected final int byteMultiplier;
+
+    public DriveStorageLevel getLevel() {
+        return level;
+    }
+
+    public int getByteMultiplier() {
+        return byteMultiplier;
+    }
 
     public EStorageCell(DriveStorageLevel level, final int millionBytes, final int byteMultiplier) {
         this.level = level;

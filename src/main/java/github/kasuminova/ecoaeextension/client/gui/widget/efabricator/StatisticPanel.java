@@ -94,7 +94,8 @@ public class StatisticPanel extends SizedRow {
 
         @Override
         public boolean onGuiEvent(final GuiEvent event) {
-            if (event instanceof EFGUIDataUpdateEvent efGUIEvent) {
+            if (event instanceof EFGUIDataUpdateEvent) {
+                EFGUIDataUpdateEvent efGUIEvent = (EFGUIDataUpdateEvent) event;
                 EFabricatorData data = efGUIEvent.getEFGui().getData();
                 if (data == null) {
                     return super.onGuiEvent(event);
@@ -148,7 +149,8 @@ public class StatisticPanel extends SizedRow {
 
             @Override
             public boolean onGuiEvent(final GuiEvent event) {
-                if (event instanceof EFGUIDataUpdateEvent efGUIEvent) {
+                if (event instanceof EFGUIDataUpdateEvent) {
+                    EFGUIDataUpdateEvent efGUIEvent = (EFGUIDataUpdateEvent) event;
                     EFabricatorData data = efGUIEvent.getEFGui().getData();
                     if (data == null) {
                         return super.onGuiEvent(event);
@@ -212,7 +214,8 @@ public class StatisticPanel extends SizedRow {
 
         @Override
         public boolean onGuiEvent(final GuiEvent event) {
-            if (event instanceof EFGUIDataUpdateEvent efGUIEvent) {
+            if (event instanceof EFGUIDataUpdateEvent) {
+                EFGUIDataUpdateEvent efGUIEvent = (EFGUIDataUpdateEvent) event;
                 EFabricatorData data = efGUIEvent.getEFGui().getData();
                 if (data == null) {
                     return super.onGuiEvent(event);
@@ -316,7 +319,8 @@ public class StatisticPanel extends SizedRow {
 
         @Override
         public boolean onGuiEvent(final GuiEvent event) {
-            if (event instanceof EFGUIDataUpdateEvent efGUIEvent) {
+            if (event instanceof EFGUIDataUpdateEvent) {
+                EFGUIDataUpdateEvent efGUIEvent = (EFGUIDataUpdateEvent) event;
                 EFabricatorData data = efGUIEvent.getEFGui().getData();
                 if (data == null) {
                     return super.onGuiEvent(event);

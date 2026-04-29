@@ -27,6 +27,10 @@ public class MultiLineLabel extends DynamicWidget {
         return this;
     }
 
+    public MultiLineLabel setAutoRecalculateSize(boolean autoRecalculateSize) {
+        return this;
+    }
+
     public boolean isAutoWrap() {
         return autoWrap;
     }
@@ -59,8 +63,23 @@ public class MultiLineLabel extends DynamicWidget {
     }
 
     @Override
+    public MultiLineLabel setWidth(int width) {
+        super.setWidth(width);
+        return this;
+    }
+
+    @Override
     public MultiLineLabel setHeight(int height) {
         super.setHeight(height);
+        return this;
+    }
+
+    @Override
+    public MultiLineLabel setMargin(int margin) {
+        this.marginTop = margin;
+        this.marginBottom = margin;
+        this.marginLeft = margin;
+        this.marginRight = margin;
         return this;
     }
 

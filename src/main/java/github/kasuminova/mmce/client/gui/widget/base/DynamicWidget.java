@@ -63,6 +63,10 @@ public abstract class DynamicWidget {
         return false;
     }
 
+    public DynamicWidget setMargin(int margin) {
+        return this;
+    }
+
     public DynamicWidget setMargin(int top, int right, int bottom, int left) {
         return this;
     }
@@ -132,6 +136,13 @@ public abstract class DynamicWidget {
     public DynamicWidget setHeight(int height) {
         this.height = height;
         return this;
+    }
+
+    public boolean onKeyTyped(final char typedChar, final int keyCode) {
+        return false;
+    }
+
+    public void onMouseClickGlobal(final MousePos mousePos, final RenderPos renderPos, final int mouseButton) {
     }
 
     public boolean isVisible() {

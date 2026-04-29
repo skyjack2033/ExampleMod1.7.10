@@ -26,6 +26,10 @@ public class RenderSize {
         return new RenderSize(Math.min(width, other.width), Math.min(height, other.height));
     }
 
+    public RenderSize subtract(RenderSize other) {
+        return new RenderSize(width - other.width, height - other.height);
+    }
+
     public boolean isHeightLimited() {
         return false;
     }

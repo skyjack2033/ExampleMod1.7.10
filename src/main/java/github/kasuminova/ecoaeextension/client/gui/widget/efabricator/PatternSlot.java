@@ -41,8 +41,8 @@ public class PatternSlot extends SlotItemVirtual {
     public void render(final WidgetGui widgetGui, final RenderSize renderSize, final RenderPos renderPos, final MousePos mousePos) {
         final ItemStack prevStack = stackInSlot;
         if (details != null) {
-            IAEItemStack primaryOutput = details.getPrimaryOutput();
-            stackInSlot = primaryOutput.getCachedItemStack(primaryOutput.getStackSize());
+            IAEItemStack primaryOutput = details.getOutputs()[0];
+            stackInSlot = primaryOutput.getItemStack();
         }
         super.render(widgetGui, renderSize, renderPos, mousePos);
         stackInSlot = prevStack;
@@ -67,16 +67,17 @@ public class PatternSlot extends SlotItemVirtual {
         if (!(obj instanceof PatternSlot)) {
             return false;
         }
+        PatternSlot other = (PatternSlot) obj;
         return slotOwnerPos.equals(other.slotOwnerPos) && slotIndex == other.slotIndex;
     }
 
     @Override
-    public SlotItemVirtual setStackInSlot(final ItemStack stackInSlot) {
+    public void setStackInSlot(final ItemStack stackInSlot) {
         if (stackInSlot.getItem() instanceof ICraftingPatternItem patternItem) {
-            AEItemStack key = AEItemStack.fromItemStack(stackInSlot);
+            AEItemStack key = AEItemStack.create(stackInSlot);
             if (key == null) {
                 this.details = null;
-                return super.setStackInSlot(stackInSlot);
+                return;
             }
 
             if (DETAILS_CACHE.containsKey(key)) {
@@ -84,18 +85,18 @@ public class PatternSlot extends SlotItemVirtual {
                 if (ref != null) {
                     this.details = ref.get();
                 } else {
-                    this.details = patternItem.getPatternForItem(stackInSlot, Minecraft.getMinecraft().world);
+                    this.details = patternItem.getPatternForItem(stackInSlot, Minecraft.getMinecraft().theWorld);
                     DETAILS_CACHE.put(key.copy(), new WeakReference<>(this.details));
                 }
             } else {
-                this.details = patternItem.getPatternForItem(stackInSlot, Minecraft.getMinecraft().world);
+                this.details = patternItem.getPatternForItem(stackInSlot, Minecraft.getMinecraft().theWorld);
                 DETAILS_CACHE.put(key.copy(), new WeakReference<>(this.details));
             }
         } else {
             this.details = null;
         }
 
-        return super.setStackInSlot(stackInSlot);
+        super.setStackInSlot(stackInSlot);
     }
 
     @Nullable
