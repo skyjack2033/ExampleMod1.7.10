@@ -1,34 +1,20 @@
 [
   {
-    "modid": "${mod_id}",
-    "name": "${mod_name}",
-    "version": "${mod_version}",
-    "mcversion": "1.12.2",
-    "description": "新星工程计划 - AE - 存储 - 合成 - 处理 三件套",
-    "authorList": ${mod_authors},
-    "credits": "${mod_credits}",
-    "url": "${mod_url}",
-    "updateJSON": "${mod_update_json}",
-    "logoFile": "${mod_logo_path}",
+    "modid": "${modId}",
+    "name": "${modName}",
+    "version": "${modVersion}",
+    "mcversion": "${minecraftVersion}",
+    "description": "Nova Engineering - ECO AE Extension / 新星工程 - AE扩展 - 存储/合成/处理三件套",
+    "authorList": ["Kasumi_Nova", "sddsd2332", "WI_8614_ice"],
+    "credits": "Kasumi_Nova",
+    "url": "https://github.com/skyjack2033/ExampleMod1.7.10",
+    "logoFile": "assets/ecoaeextension/logo.png",
     "useDependencyInformation": true,
-      "dependencies": [
-        "forge",
-        "modularmachinery",
-        "appliedenergistics2",
-        "mixinbooter",
-        "jei",
-        "theoneprobe",
-        "ae2fc@[2.6.3-r,)",
-        "lumenized",
-        "random_complement"
-      ],
-      "requiredMods": [
-        "forge@[14.23.5.2768,)",
-        "jei@[4.25.0,)",
-        "modularmachinery@[2.1.0,)",
-        "appliedenergistics2@[v0.56.4,)",
-        "mixinbooter@[8.0,)",
-        "random_complement@[1.6.4,)"
-      ]
+    "dependencies": [
+      "appliedenergistics2"
+    ],
+    "requiredMods": [
+      "appliedenergistics2"
+    ]
   }
 ]
