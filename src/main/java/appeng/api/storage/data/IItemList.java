@@ -1,12 +1,9 @@
 package appeng.api.storage.data;
 
-import java.util.Iterator;
-
-public interface IItemList<T extends IAEStack> extends Iterable<T> {
-    T findPrecise(T stack);
-    void add(T stack);
-    int size();
+public interface IItemList<T extends IAEStack<T>> extends Iterable<T> {
+    void add(T option);
+    T findPrecise(T i);
+    T getFirstItem();
     void resetStatus();
-    @Override
-    Iterator<T> iterator();
+    int size();
 }

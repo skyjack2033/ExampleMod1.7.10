@@ -67,11 +67,8 @@ public abstract class AbstractEPart<C extends EPartController<?>> extends TileEn
     public void updateContainingBlockInfo() {
         super.updateContainingBlockInfo();
         final World world = getWorld();
-        if (FMLCommonHandler.instance().getEffectiveSide().isClient() && world != null) {
-            final BlockPos pos = getPos();
-            final IBlockState state = world.getBlockState(pos);
-            final IBlockState actual = state.getActualState(world, pos);
-            world.setBlockState(pos, actual, 3);
+        if (FMLCommonHandler.instance().getEffectiveSide().isClient() && worldObj != null) {
+            worldObj.markBlockForUpdate(xCoord, yCoord, zCoord);
         }
     }
 

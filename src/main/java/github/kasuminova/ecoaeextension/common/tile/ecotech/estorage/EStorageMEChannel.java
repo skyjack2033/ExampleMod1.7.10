@@ -12,7 +12,7 @@ import appeng.api.networking.security.IActionSource;
 import appeng.api.storage.ICellContainer;
 import appeng.api.storage.ICellInventory;
 import appeng.api.storage.IMEInventoryHandler;
-import appeng.api.storage.IStorageChannel;
+import appeng.api.storage.StorageChannel;
 import appeng.api.util.AECableType;
 import appeng.api.util.AEPartLocation;
 import appeng.api.util.DimensionalCoord;
@@ -52,7 +52,7 @@ public class EStorageMEChannel extends EStoragePart implements ICellContainer, I
 
     @Override
     @SuppressWarnings("rawtypes")
-    public List<IMEInventoryHandler> getCellArray(final IStorageChannel channel) {
+    public List<IMEInventoryHandler> getCellArray(final StorageChannel channel) {
         if (partController != null) {
             return partController.getCellDrives().stream()
                     .map(drive -> drive.getHandler(channel))

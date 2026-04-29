@@ -26,19 +26,19 @@ public class EStorageGraph extends Row {
         this.controllerGUI = controllerGUI;
         addWidget(graphBar = new EStorageGraphBar(controllerGUI));
         WidgetController widgetController = controllerGUI.getWidgetController();
-        widgetController.addWidgetContainer(new FluidGraph(this));
-        widgetController.addWidgetContainer(new ItemGraph(this));
+        widgetController.addWidget(new FluidGraph(this));
+        widgetController.addWidget(new ItemGraph(this));
         if (getMekEngLoad()) {
-            widgetController.addWidgetContainer(new GasGraph(this));
+            widgetController.addWidget(new GasGraph(this));
         }
-        widgetController.addWidgetContainer(new TotalGraph(this));
-        widgetController.addWidgetContainer(new FluidTypeGraph(this));
-        widgetController.addWidgetContainer(new ItemTypeGraph(this));
+        widgetController.addWidget(new TotalGraph(this));
+        widgetController.addWidget(new FluidTypeGraph(this));
+        widgetController.addWidget(new ItemTypeGraph(this));
         if (getMekEngLoad()) {
-            widgetController.addWidgetContainer(new GasTypeGraph(this));
+            widgetController.addWidget(new GasTypeGraph(this));
         }
-        widgetController.addWidgetContainer(new EnergyCapacityGraph(this));
-        widgetController.addWidgetContainer(new EnergyUsageGraph(this));
+        widgetController.addWidget(new EnergyCapacityGraph(this));
+        widgetController.addWidget(new EnergyUsageGraph(this));
     }
 
     @Override
@@ -224,8 +224,8 @@ public class EStorageGraph extends Row {
 
     public class FluidTypeGraph extends Graph {
 
-        protected final AnimationValue totalUsedFluidTypes = AnimationValue.ofFinished(0, 500, .25, .1, .25, 1);
-        protected final AnimationValue totalMaxFluidTypes = AnimationValue.ofFinished(0, 500, .25, .1, .25, 1);
+        protected final AnimationValue totalUsedFluidTypes = new AnimationValue(0, 1, 500);
+        protected final AnimationValue totalMaxFluidTypes = new AnimationValue(0, 1, 500);
 
         public FluidTypeGraph(final EStorageGraph graphParent) {
             super(graphParent,
@@ -271,8 +271,8 @@ public class EStorageGraph extends Row {
 
     public class ItemTypeGraph extends Graph {
 
-        protected final AnimationValue totalUsedItemTypes = AnimationValue.ofFinished(0, 500, .25, .1, .25, 1);
-        protected final AnimationValue totalMaxItemTypes = AnimationValue.ofFinished(0, 500, .25, .1, .25, 1);
+        protected final AnimationValue totalUsedItemTypes = new AnimationValue(0, 1, 500);
+        protected final AnimationValue totalMaxItemTypes = new AnimationValue(0, 1, 500);
 
         public ItemTypeGraph(final EStorageGraph graphParent) {
             super(graphParent,
@@ -318,8 +318,8 @@ public class EStorageGraph extends Row {
 
     public class GasTypeGraph extends Graph {
 
-        protected final AnimationValue totalUsedGasTypes = AnimationValue.ofFinished(0, 500, .25, .1, .25, 1);
-        protected final AnimationValue totalMaxGasTypes = AnimationValue.ofFinished(0, 500, .25, .1, .25, 1);
+        protected final AnimationValue totalUsedGasTypes = new AnimationValue(0, 1, 500);
+        protected final AnimationValue totalMaxGasTypes = new AnimationValue(0, 1, 500);
 
         public GasTypeGraph(final EStorageGraph graphParent) {
             super(graphParent,
@@ -365,7 +365,7 @@ public class EStorageGraph extends Row {
 
     public class EnergyUsageGraph extends Graph {
 
-        protected final AnimationValue energyConsumePerTick = AnimationValue.ofFinished(0, 500, .25, .1, .25, 1);
+        protected final AnimationValue energyConsumePerTick = new AnimationValue(0, 1, 500);
 
         public EnergyUsageGraph(final EStorageGraph graphParent) {
             super(graphParent,
@@ -406,8 +406,8 @@ public class EStorageGraph extends Row {
     }
 
     public class EnergyCapacityGraph extends Graph {
-        protected final AnimationValue energyStored = AnimationValue.ofFinished(0, 500, .25, .1, .25, 1);
-        protected final AnimationValue maxEnergyStore = AnimationValue.ofFinished(0, 500, .25, .1, .25, 1);
+        protected final AnimationValue energyStored = new AnimationValue(0, 1, 500);
+        protected final AnimationValue maxEnergyStore = new AnimationValue(0, 1, 500);
         protected boolean shiftDown = false;
 
         public EnergyCapacityGraph(final EStorageGraph graphParent) {

@@ -3,6 +3,7 @@ package appeng.tile.inventory;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.inventory.IInventory;
 import net.minecraft.item.ItemStack;
+import net.minecraft.nbt.NBTTagCompound;
 import appeng.util.inv.IAEAppEngInventory;
 import appeng.util.inv.filter.IAEItemFilter;
 
@@ -10,6 +11,16 @@ public class AppEngInternalInventory extends AppEngCellInventory implements IInv
 
     public AppEngInternalInventory(IAEAppEngInventory inventory, int slots) {
         super(inventory, slots);
+    }
+
+    public AppEngInternalInventory(IAEAppEngInventory inventory, int slots, int stackLimit, IAEItemFilter filter) {
+        super(inventory, slots);
+    }
+
+    public void readFromNBT(NBTTagCompound data) {
+    }
+
+    public void writeToNBT(NBTTagCompound data, String tag) {
     }
 
     public void setFilter(IAEItemFilter filter) {

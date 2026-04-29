@@ -87,7 +87,7 @@ public class BlockECalculatorCellDrive extends BlockECalculatorPart {
                 ItemStack stack = inv.getStackInSlot(i);
                 if (stack != null && stack.stackSize > 0) {
                     spawnAsEntity(worldIn, pos, stack);
-                    inv.setStackInSlot(i, ItemStack.EMPTY);
+                    inv.setStackInSlot(i, null);
                 }
             }
         }

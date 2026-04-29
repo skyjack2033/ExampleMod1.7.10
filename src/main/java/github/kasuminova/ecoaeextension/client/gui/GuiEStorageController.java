@@ -20,6 +20,7 @@ import net.minecraft.client.gui.Gui;
 
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.util.ResourceLocation;
+import org.lwjgl.opengl.GL11;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -38,17 +39,17 @@ public class GuiEStorageController extends GuiContainerDynamic<ContainerEStorage
         this.xSize = 256;
         this.ySize = 207;
         this.widgetController = new WidgetController(WidgetGui.of(this));
-        this.widgetController.addWidgetContainer((WidgetContainer) new CellInfoColumn(this).setAbsXY(178, 22));
-        this.widgetController.addWidgetContainer((WidgetContainer) new EStorageGraph(this).setAbsXY(63, 22));
+        this.widgetController.addWidget(new CellInfoColumn(this).setAbsXY(178, 22));
+        this.widgetController.addWidget(new EStorageGraph(this).setAbsXY(63, 22));
     }
 
     @Override
     protected void drawGuiContainerBackgroundLayer(final float partialTicks, final int mouseX, final int mouseY) {
-        GlStateManager.color(1.0F, 1.0F, 1.0F);
+        GL11.glColor3f(1.0F, 1.0F, 1.0F);
         this.mc.getTextureManager().bindTexture(TEXTURES_BACKGROUND);
         final int x = (this.width - this.xSize) / 2;
         final int y = (this.height - this.ySize) / 2;
-        Gui.drawModalRectWithCustomSizedTexture(x, y, 0, 0, 256, 207, 256, 256);
+        this.drawTexturedModalRect(x, y, 0, 0, 256, 207);
         super.drawGuiContainerBackgroundLayer(partialTicks, mouseX, mouseY);
     }
 

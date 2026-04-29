@@ -44,6 +44,10 @@ public class EFabricatorPatternBus extends EFabricatorPart implements IAEAppEngI
         IntStream.range(0, PATTERN_SLOTS).<ICraftingPatternDetails>mapToObj(i -> null).forEach(details::add);
     }
 
+    public int getInventoryStackLimit() {
+        return 64;
+    }
+
     protected void refreshPatterns() {
         for (int i = 0; i < PATTERN_SLOTS; i++) {
             refreshPattern(i);
@@ -56,9 +60,10 @@ public class EFabricatorPatternBus extends EFabricatorPart implements IAEAppEngI
 
         ItemStack pattern = patterns.getStackInSlot(slot);
         Item item = pattern.getItem();
-        if (pattern.stackSize <= 0 || !(item instanceof ICraftingPatternItem patternItem)) {
+        if (pattern.stackSize <= 0 || !(item instanceof ICraftingPatternItem)) {
             return;
         }
+        ICraftingPatternItem patternItem = (ICraftingPatternItem) item;
 
         ICraftingPatternDetails detail = patternItem.getPatternForItem(pattern, getWorld());
         if (detail != null && (detail.isCraftable() || detail instanceof FluidCraftingPatternDetails)) {
@@ -80,7 +85,6 @@ public class EFabricatorPatternBus extends EFabricatorPart implements IAEAppEngI
         return (int) details.stream().filter(Objects::nonNull).count();
     }
 
-    @Override
     public void saveChanges() {
         markNoUpdateSync();
     }
@@ -112,18 +116,19 @@ public class EFabricatorPatternBus extends EFabricatorPart implements IAEAppEngI
         }
 
         List<EntityPlayerMP> players = new ArrayList<>();
-        world.playerEntities.stream()
+        getWorld().playerEntities.stream()
                 .filter(EntityPlayerMP.class::isInstance)
                 .map(EntityPlayerMP.class::cast)
                 .forEach(playerMP -> {
-                    if (playerMP.openContainer instanceof ContainerEFabricatorPatternSearch efPatternSearch) {
+                    if (playerMP.openContainer instanceof ContainerEFabricatorPatternSearch) {
+                        ContainerEFabricatorPatternSearch efPatternSearch = (ContainerEFabricatorPatternSearch) playerMP.openContainer;
                         if (efPatternSearch.getOwner() == this.partController) {
                             players.add(playerMP);
                         }
                     }
                 });
 
-        if (players != null && players.stackSize > 0) {
+        if (players != null && players.size() > 0) {
             PktEFabricatorPatternSearchGUIUpdate pktUpdate = new PktEFabricatorPatternSearchGUIUpdate(
                     PktEFabricatorPatternSearchGUIUpdate.UpdateType.SINGLE,
                     EFabricatorPatternData.of(

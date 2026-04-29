@@ -1,13 +1,18 @@
 package github.kasuminova.ecoaeextension.common.tile.ecotech.estorage;
 
-import appeng.api.AEApi;
 import appeng.api.networking.events.MENetworkCellArrayUpdate;
 import appeng.api.networking.security.IActionSource;
 import appeng.api.networking.storage.IStorageGrid;
-import appeng.api.storage.*;
+import appeng.api.storage.ICellInventory;
+import appeng.api.storage.ICellInventoryHandler;
+import appeng.api.storage.IMEInventory;
+import appeng.api.storage.IMEInventoryHandler;
+import appeng.api.storage.IMEMonitor;
+import appeng.api.storage.StorageChannel;
 import appeng.api.storage.data.IAEItemStack;
 import appeng.api.storage.data.IAEStack;
 import appeng.api.storage.data.IItemList;
+import appeng.api.storage.data.ISaveProvider;
 import appeng.me.GridAccessException;
 import appeng.me.helpers.AENetworkProxy;
 import appeng.tile.inventory.AppEngCellInventory;
@@ -51,7 +56,7 @@ import static appeng.helpers.ItemStackHelper.stackWriteToNBT;
 public class EStorageCellDrive extends EStoragePart implements ISaveProvider, IAEAppEngInventory {
 
     protected final AppEngCellInventory driveInv = new AppEngCellInventory(this, 1);
-    protected final Map<IStorageChannel, IMEInventoryHandler> inventoryHandlers = new Reference2ObjectOpenHashMap<>();
+    protected final Map<StorageChannel, IMEInventoryHandler> inventoryHandlers = new Reference2ObjectOpenHashMap<>();
 
     protected EStorageCellHandler cellHandler = null;
     protected ECellDriveWatcher<IAEItemStack> watcher = null;
@@ -81,23 +86,23 @@ public class EStorageCellDrive extends EStoragePart implements ISaveProvider, IA
         long itemBytes = 0;
         switch (level) {
             case EMPTY: itemBytes = 0; break;
-            case A: itemBytes = EStorageCellItem.LEVEL_A.getBytes(ItemStack.EMPTY); break;
-            case B: itemBytes = EStorageCellItem.LEVEL_B.getBytes(ItemStack.EMPTY); break;
-            case C: itemBytes = EStorageCellItem.LEVEL_C.getBytes(ItemStack.EMPTY); break;
+            case A: itemBytes = EStorageCellItem.LEVEL_A.getBytes(null); break;
+            case B: itemBytes = EStorageCellItem.LEVEL_B.getBytes(null); break;
+            case C: itemBytes = EStorageCellItem.LEVEL_C.getBytes(null); break;
         }
         long fluidBytes = 0;
         switch (level) {
             case EMPTY: fluidBytes = 0; break;
-            case A: fluidBytes = EStorageCellFluid.LEVEL_A.getBytes(ItemStack.EMPTY); break;
-            case B: fluidBytes = EStorageCellFluid.LEVEL_B.getBytes(ItemStack.EMPTY); break;
-            case C: fluidBytes = EStorageCellFluid.LEVEL_C.getBytes(ItemStack.EMPTY); break;
+            case A: fluidBytes = EStorageCellFluid.LEVEL_A.getBytes(null); break;
+            case B: fluidBytes = EStorageCellFluid.LEVEL_B.getBytes(null); break;
+            case C: fluidBytes = EStorageCellFluid.LEVEL_C.getBytes(null); break;
         }
         long gasBytes = 0;
         switch (level) {
             case EMPTY: gasBytes = 0; break;
-            case A: gasBytes = EStorageCellGas.LEVEL_A.getBytes(ItemStack.EMPTY); break;
-            case B: gasBytes = EStorageCellGas.LEVEL_B.getBytes(ItemStack.EMPTY); break;
-            case C: gasBytes = EStorageCellGas.LEVEL_C.getBytes(ItemStack.EMPTY); break;
+            case A: gasBytes = EStorageCellGas.LEVEL_A.getBytes(null); break;
+            case B: gasBytes = EStorageCellGas.LEVEL_B.getBytes(null); break;
+            case C: gasBytes = EStorageCellGas.LEVEL_C.getBytes(null); break;
         }
         switch (type) {
             case EMPTY: return 0;
@@ -109,7 +114,7 @@ public class EStorageCellDrive extends EStoragePart implements ISaveProvider, IA
     }
 
     public void updateWriteState() {
-        long totalWorldTime = world.getTotalWorldTime();
+        long totalWorldTime = worldObj.getTotalWorldTime();
         boolean changed = false;
         if (totalWorldTime - lastWriteTick >= 40) {
             if (writing) {
@@ -124,21 +129,21 @@ public class EStorageCellDrive extends EStoragePart implements ISaveProvider, IA
             return;
         }
         // Static update or changed update.
-        if (world.getTotalWorldTime() % 200 == 0) {
-            BlockPos pos = getPos();
+        if (worldObj.getTotalWorldTime() % 200 == 0) {
+            BlockPos pos = new BlockPos(xCoord, yCoord, zCoord);
             ECOAEExtension.NET_CHANNEL.sendToAllTracking(
-                    new PktCellDriveStatusUpdate(getPos(), writing),
+                    new PktCellDriveStatusUpdate(new BlockPos(xCoord, yCoord, zCoord), writing),
                     new NetworkRegistry.TargetPoint(
-                            world.provider.getDimension(),
+                            worldObj.provider.getDimension(),
                             pos.getX(), pos.getY(), pos.getZ(),
                             -1)
             );
         } else if (changed) {
-            BlockPos pos = getPos();
+            BlockPos pos = new BlockPos(xCoord, yCoord, zCoord);
             ECOAEExtension.NET_CHANNEL.sendToAllAround(
-                    new PktCellDriveStatusUpdate(getPos(), writing),
+                    new PktCellDriveStatusUpdate(new BlockPos(xCoord, yCoord, zCoord), writing),
                     new NetworkRegistry.TargetPoint(
-                            world.provider.getDimension(),
+                            worldObj.provider.getDimension(),
                             pos.getX(), pos.getY(), pos.getZ(),
                             16)
             );
@@ -162,8 +167,8 @@ public class EStorageCellDrive extends EStoragePart implements ISaveProvider, IA
             return;
         }
         ICellInventoryHandler cellInventory = null;
-        final Collection<IStorageChannel> storageChannels = AEApi.instance().storage().storageChannels();
-        for (final IStorageChannel channel : storageChannels) {
+        StorageChannel[] storageChannels = new StorageChannel[]{StorageChannel.ITEMS, StorageChannel.FLUIDS};
+        for (final StorageChannel channel : storageChannels) {
             cellInventory = cellHandler.getCellInventory(stack, this, channel);
             if (cellInventory == null) {
                 continue;
@@ -206,7 +211,7 @@ public class EStorageCellDrive extends EStoragePart implements ISaveProvider, IA
     }
 
     public void updateDriveBlockState() {
-        if (world == null) {
+        if (worldObj == null) {
             return;
         }
         markForUpdate();
@@ -249,7 +254,7 @@ public class EStorageCellDrive extends EStoragePart implements ISaveProvider, IA
     }
 
     @SuppressWarnings("unchecked")
-    public <T extends IAEStack> IMEInventoryHandler<T> getHandler(final IStorageChannel channel) {
+    public <T extends IAEStack<T>> IMEInventoryHandler<T> getHandler(final StorageChannel channel) {
         updateHandler(false);
         if (driveInv.getStackInSlot(0).getItem() instanceof EStorageCell<?> cell && isCellSupported(cell.getLevel())) {
             IMEInventoryHandler handler = inventoryHandlers.get(channel);
@@ -310,7 +315,7 @@ public class EStorageCellDrive extends EStoragePart implements ISaveProvider, IA
             if (proxy.isActive()) {
                 ItemStack removed = driveInv.getStackInSlot(0);
                 final IStorageGrid gs = proxy.getStorage();
-                postChanges(gs, removed, ItemStack.EMPTY, source);
+                postChanges(gs, removed, null, source);
             }
             proxy.getGrid().postEvent(new MENetworkCellArrayUpdate());
         } catch (final GridAccessException ignored) {
@@ -322,7 +327,7 @@ public class EStorageCellDrive extends EStoragePart implements ISaveProvider, IA
         if (cellHandler == null) {
             return;
         }
-        for (final IStorageChannel chan : AEApi.instance().storage().storageChannels()) {
+        for (final StorageChannel chan : new StorageChannel[]{StorageChannel.ITEMS, StorageChannel.FLUIDS}) {
             final IItemList<?> myChanges = chan.createList();
 
             if (removed != null && removed.stackSize > 0) {
@@ -353,7 +358,7 @@ public class EStorageCellDrive extends EStoragePart implements ISaveProvider, IA
     }
 
     public void onWriting() {
-        this.lastWriteTick = world.getTotalWorldTime();
+        this.lastWriteTick = worldObj.getTotalWorldTime();
     }
 
     public boolean isWriting() {
@@ -398,11 +403,10 @@ public class EStorageCellDrive extends EStoragePart implements ISaveProvider, IA
     }
 
     @Override
-    public void saveChanges(@Nullable final ICellInventory<?> cellInventory) {
-        saveChanges();
+    public void saveChanges(IMEInventory cellInventory) {
+        markDirty();
     }
 
-    @Override
     public void saveChanges() {
         markDirty();
     }

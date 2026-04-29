@@ -12,6 +12,7 @@ import github.kasuminova.ecoaeextension.client.gui.widget.SizedColumn;
 import github.kasuminova.ecoaeextension.client.gui.widget.estorage.event.ESGraphFocusUpdateEvent;
 import github.kasuminova.ecoaeextension.common.util.RandomUtils;
 import net.minecraft.client.gui.GuiScreen;
+import org.lwjgl.opengl.GL11;
 
 import net.minecraft.util.ResourceLocation;
 
@@ -22,7 +23,7 @@ public abstract class Graph extends SizedColumn {
 
     protected final EStorageGraph graphParent;
     protected final MultiLineLabel label;
-    protected final AnimationValue value = AnimationValue.ofFinished(0, 500, .25, .1, .25, 1);
+    protected final AnimationValue value = new AnimationValue(0, 1, 500);
 
     protected final int bgTexX;
     protected final int bgTexY;
@@ -91,7 +92,7 @@ public abstract class Graph extends SizedColumn {
     @Override
     protected void renderInternal(final WidgetGui widgetGui, final RenderSize renderSize, final RenderPos renderPos, final MousePos mousePos) {
         if (!focused) {
-            GlStateManager.color(1F, 1F, 1F, .4F);
+            GL11.glColor4f(1F, 1F, 1F, .4F);
         }
         GuiScreen gui = widgetGui.getGui();
         gui.mc.getTextureManager().bindTexture(BG_TEX_RES);
@@ -100,7 +101,7 @@ public abstract class Graph extends SizedColumn {
                 bgTexX, bgTexY,
                 bgTexWidth, bgTexHeight
         );
-        GlStateManager.color(1F, 1F, 1F, 1F);
+        GL11.glColor4f(1F, 1F, 1F, 1F);
         super.renderInternal(widgetGui, renderSize, renderPos, mousePos);
     }
 

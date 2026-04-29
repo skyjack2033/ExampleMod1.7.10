@@ -36,12 +36,16 @@ public class EFabricatorParallelProc extends EFabricatorPart {
     public void readCustomNBT(final NBTTagCompound compound) {
         super.readCustomNBT(compound);
         modifiers.clear();
-        compound.getTagList("modifiers", Constants.NBT.TAG_COMPOUND)
-                .forEach(tag -> modifiers.add(Modifier.readFromNBT((NBTTagCompound) tag)));
+        NBTTagList modifiersTag = compound.getTagList("modifiers", Constants.NBT.TAG_COMPOUND);
+        for (int i = 0; i < modifiersTag.tagCount(); i++) {
+            modifiers.add(Modifier.readFromNBT(modifiersTag.getCompoundTagAt(i)));
+        }
 
         overclockModifiers.clear();
-        compound.getTagList("overclockModifiers", Constants.NBT.TAG_COMPOUND)
-                .forEach(tag -> overclockModifiers.add(Modifier.readFromNBT((NBTTagCompound) tag)));
+        NBTTagList overclockModifiersTag = compound.getTagList("overclockModifiers", Constants.NBT.TAG_COMPOUND);
+        for (int i = 0; i < overclockModifiersTag.tagCount(); i++) {
+            overclockModifiers.add(Modifier.readFromNBT(overclockModifiersTag.getCompoundTagAt(i)));
+        }
     }
 
     @Override

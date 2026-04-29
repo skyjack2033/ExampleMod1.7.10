@@ -1,8 +1,6 @@
 package github.kasuminova.ecoaeextension.common.item.estorage;
 
-import appeng.api.AEApi;
-import appeng.api.storage.IStorageChannel;
-import appeng.api.storage.channels.IFluidStorageChannel;
+import appeng.api.storage.StorageChannel;
 import appeng.api.storage.data.IAEFluidStack;
 import github.kasuminova.ecoaeextension.ECOAEExtension;
 import github.kasuminova.ecoaeextension.common.block.ecotech.estorage.prop.DriveStorageLevel;
@@ -41,7 +39,7 @@ public class EStorageCellFluid extends EStorageCell<IAEFluidStack> {
 
     @Nonnull
     @Override
-    public IStorageChannel getChannel() {
-        return AEApi.instance().storage().getStorageChannel(IFluidStorageChannel.class);
+    public StorageChannel getChannel() {
+        return StorageChannel.FLUIDS;
     }
 }

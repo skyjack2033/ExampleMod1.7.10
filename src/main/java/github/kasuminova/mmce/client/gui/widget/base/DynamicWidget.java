@@ -5,31 +5,39 @@ import github.kasuminova.mmce.client.gui.widget.event.GuiEvent;
 
 public abstract class DynamicWidget {
 
-    private int width;
-    private int height;
+    protected int width;
+    protected int height;
     private boolean visible = true;
     private int absX;
     private int absY;
+    private boolean rightAligned = false;
+    private boolean verticalCentering = false;
 
     public abstract void render(RenderPos renderPos, WidgetGui widgetGui);
 
-    public void onGuiEvent(GuiEvent event) {
+    public boolean onGuiEvent(GuiEvent event) {
+        return false;
+    }
+
+    public void update(WidgetGui gui) {
     }
 
     public int getAbsX() {
         return absX;
     }
 
-    public void setAbsX(int absX) {
+    public DynamicWidget setAbsX(int absX) {
         this.absX = absX;
+        return this;
     }
 
     public int getAbsY() {
         return absY;
     }
 
-    public void setAbsY(int absY) {
+    public DynamicWidget setAbsY(int absY) {
         this.absY = absY;
+        return this;
     }
 
     public DynamicWidget setAbsXY(int x, int y) {
@@ -42,16 +50,18 @@ public abstract class DynamicWidget {
         return width;
     }
 
-    public void setWidth(int width) {
+    public DynamicWidget setWidth(int width) {
         this.width = width;
+        return this;
     }
 
     public int getHeight() {
         return height;
     }
 
-    public void setHeight(int height) {
+    public DynamicWidget setHeight(int height) {
         this.height = height;
+        return this;
     }
 
     public boolean isVisible() {
@@ -60,6 +70,24 @@ public abstract class DynamicWidget {
 
     public void setVisible(boolean visible) {
         this.visible = visible;
+    }
+
+    public boolean isRightAligned() {
+        return rightAligned;
+    }
+
+    public DynamicWidget setRightAligned(boolean rightAligned) {
+        this.rightAligned = rightAligned;
+        return this;
+    }
+
+    public boolean isVerticalCentering() {
+        return verticalCentering;
+    }
+
+    public DynamicWidget setVerticalCentering(boolean verticalCentering) {
+        this.verticalCentering = verticalCentering;
+        return this;
     }
 
 }

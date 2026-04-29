@@ -4,9 +4,12 @@ import github.kasuminova.ecoaeextension.common.util.BlockPos;
 import net.minecraft.block.state.IBlockState;
 import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.network.Packet;
+import net.minecraft.network.play.server.S35PacketUpdateTileEntity;
 import net.minecraft.tileentity.TileEntity;
 import net.minecraft.world.World;
 import cpw.mods.fml.common.FMLCommonHandler;
+
+import javax.annotation.Nullable;
 
 public class TileEntitySynchronized extends TileEntity {
 
@@ -71,6 +74,31 @@ public class TileEntitySynchronized extends TileEntity {
         final World world = getWorld();
         // Stub: block state update (1.8+ API, not available in 1.7.10)
         if (FMLCommonHandler.instance().getEffectiveSide().isClient() && worldObj != null) {
+            worldObj.markBlockForUpdate(xCoord, yCoord, zCoord);
+        }
+    }
+
+    @Nullable
+    public S35PacketUpdateTileEntity getUpdatePacket() {
+        return null;
+    }
+
+    public NBTTagCompound getUpdateTag() {
+        return new NBTTagCompound();
+    }
+
+    public void markNoUpdateSync() {
+        markDirty();
+    }
+
+    public void notifyUpdate() {
+        if (worldObj != null) {
+            worldObj.markBlockForUpdate(xCoord, yCoord, zCoord);
+        }
+    }
+
+    public void markChunkDirty() {
+        if (worldObj != null) {
             worldObj.markBlockForUpdate(xCoord, yCoord, zCoord);
         }
     }

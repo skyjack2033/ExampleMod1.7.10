@@ -20,12 +20,32 @@ public class AnimationValue {
         return Math.abs(value - target) < 0.001F;
     }
 
+    public boolean isAnimFinished() {
+        return isFinished();
+    }
+
     public float getValue() {
+        return value;
+    }
+
+    public float get() {
         return value;
     }
 
     public void setValue(float value) {
         this.value = value;
+    }
+
+    public void set(float value) {
+        this.value = value;
+    }
+
+    public void set(int value) {
+        this.value = (float) value;
+    }
+
+    public void set(double value) {
+        this.value = (float) value;
     }
 
     public float getTarget() {

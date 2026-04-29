@@ -52,7 +52,7 @@ public class EStorageController extends EPartController<EStoragePart> {
     public EStorageController(final ResourceLocation machineRegistryName) {
         this.workMode = WorkMode.SYNC;
         this.parentMachine = MachineRegistry.getRegistry().getMachine(machineRegistryName);
-        this.parentController = BlockEStorageController.REGISTRY.get(new ResourceLocation(ECOAEExtension.MOD_ID, machineRegistryName.getPath()));
+        this.parentController = BlockEStorageController.REGISTRY.get(new ResourceLocation(ECOAEExtension.MOD_ID, machineRegistryName.getResourcePath()));
     }
 
     public EStorageController() {
@@ -60,7 +60,7 @@ public class EStorageController extends EPartController<EStoragePart> {
     }
 
     protected boolean onSyncTick() {
-        if (world.getTotalWorldTime() % 5 == 0) {
+        if (getWorld().getTotalWorldTime() % 5 == 0) {
             getCellDrives().forEach(EStorageCellDrive::updateWriteState);
             this.energyCellsMax.forEach(cell -> {
                 if (cell.shouldRecalculateCap()) {
@@ -73,11 +73,12 @@ public class EStorageController extends EPartController<EStoragePart> {
 
     @Override
     protected void onAddPart(final EStoragePart part) {
-        if (part instanceof EStorageEnergyCell energyCell) {
+        if (part instanceof EStorageEnergyCell) {
+            EStorageEnergyCell energyCell = (EStorageEnergyCell) part;
             energyCellsMax.add(energyCell);
             energyCellsMin.add(energyCell);
-        } else if (part instanceof EStorageMEChannel c) {
-            this.channel = c;
+        } else if (part instanceof EStorageMEChannel) {
+            this.channel = (EStorageMEChannel) part;
         }
     }
 
@@ -113,7 +114,7 @@ public class EStorageController extends EPartController<EStoragePart> {
             }
         }
 
-        if (toReInsert != null && toReInsert.stackSize > 0) {
+        if (toReInsert != null && toReInsert.size() > 0) {
             energyCellsMin.addAll(toReInsert);
         }
 
@@ -145,7 +146,7 @@ public class EStorageController extends EPartController<EStoragePart> {
             }
         }
 
-        if (toReInsert != null && toReInsert.stackSize > 0) {
+        if (toReInsert != null && toReInsert.size() > 0) {
             energyCellsMax.addAll(toReInsert);
         }
 
@@ -159,11 +160,11 @@ public class EStorageController extends EPartController<EStoragePart> {
             if (watcher == null) {
                 continue;
             }
-            ICellInventoryHandler<?> cellInventory = (ICellInventoryHandler<?>) watcher.getInternal();
+            ICellInventoryHandler cellInventory = (ICellInventoryHandler) watcher.getInternal();
             if (cellInventory == null) {
                 continue;
             }
-            ICellInventory<?> cellInv = cellInventory.getCellInv();
+            ICellInventory cellInv = cellInventory.getCellInv();
             if (cellInv == null) {
                 continue;
             }
@@ -257,7 +258,7 @@ public class EStorageController extends EPartController<EStoragePart> {
             ResourceLocation rl = new ResourceLocation(compound.getString("parentMachine"));
             parentMachine = MachineRegistry.getRegistry().getMachine(rl);
             if (parentMachine != null) {
-                this.parentController = BlockEStorageController.REGISTRY.get(new ResourceLocation(ECOAEExtension.MOD_ID, parentMachine.getRegistryName().getPath()));
+                this.parentController = BlockEStorageController.REGISTRY.get(new ResourceLocation(ECOAEExtension.MOD_ID, parentMachine.getMachineName()));
             } else {
                 ModularMachinery.log.info("Couldn't find machine named " + rl + " for controller at " + getPos());
             }

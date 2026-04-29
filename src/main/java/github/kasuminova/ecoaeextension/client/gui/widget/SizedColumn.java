@@ -27,7 +27,6 @@ public class SizedColumn extends Column {
         return this;
     }
 
-    @Override
     public DynamicWidget setWidthHeight(final int width, final int height) {
         return setWidth(width).setHeight(height);
     }

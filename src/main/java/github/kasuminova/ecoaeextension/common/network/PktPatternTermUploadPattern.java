@@ -60,7 +60,7 @@ public class PktPatternTermUploadPattern implements IMessage, IMessageHandler<Pk
                     if (channel.insertPattern(patternStack)) {
                         patternStack.shrink(1);
                         if (patternStack.stackSize <= 0) {
-                            patternSlotOUT.putStack(ItemStack.EMPTY);
+                            patternSlotOUT.putStack(null);
                         } else {
                             patternSlotOUT.putStack(patternStack);
                         }

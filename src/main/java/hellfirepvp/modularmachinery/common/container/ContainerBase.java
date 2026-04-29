@@ -29,4 +29,7 @@ public class ContainerBase<T extends TileEntity> extends Container {
         return owner != null && !owner.isInvalid()
                 && player.getDistanceSq(owner.xCoord + 0.5, owner.yCoord + 0.5, owner.zCoord + 0.5) <= 64.0;
     }
+
+    protected void addPlayerSlots(EntityPlayer opening) {
+    }
 }

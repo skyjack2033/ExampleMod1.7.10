@@ -31,7 +31,6 @@ public class PropertyEnum<T extends Enum<T>> extends PropertyHelper<T> {
         return new PropertyEnum<>(name, clazz, values);
     }
 
-    @Override
     public Collection<T> getAllowedValues() {
         return allowedValues;
     }
@@ -40,7 +39,6 @@ public class PropertyEnum<T extends Enum<T>> extends PropertyHelper<T> {
         return Optional.fromNullable(nameToValue.get(value));
     }
 
-    @Override
     public String getName(T value) {
         return ((Enum<?>) value).name().toLowerCase();
     }

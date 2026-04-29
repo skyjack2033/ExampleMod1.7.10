@@ -32,7 +32,7 @@ public class ECalculatorCellDrive extends ECalculatorPart implements IAEAppEngIn
         this.driveInv.setFilter(CellInvFilter.INSTANCE);
     }
 
-    
+
     public void onChangeInventory(final IItemHandler inv, final int slot, final InvOperation mc, final ItemStack removedStack, final ItemStack newStack) {
         disconnectTransmitter();
         final ECalculatorController controller = getController();
@@ -45,12 +45,13 @@ public class ECalculatorCellDrive extends ECalculatorPart implements IAEAppEngIn
 
     public long getSuppliedBytes() {
         final ItemStack stackInSlot = driveInv.getStackInSlot(0);
-        if (stackInSlot.stackSize <= 0) {
+        if (stackInSlot == null || stackInSlot.stackSize <= 0) {
             return 0;
         }
-        if (!(stackInSlot.getItem() instanceof ECalculatorCell cell)) {
+        if (!(stackInSlot.getItem() instanceof ECalculatorCell)) {
             return 0;
         }
+        ECalculatorCell cell = (ECalculatorCell) stackInSlot.getItem();
 
         Levels level = getControllerLevel();
         DriveStorageLevel cellLevel = cell.getLevel();
@@ -72,9 +73,10 @@ public class ECalculatorCellDrive extends ECalculatorPart implements IAEAppEngIn
 
     public boolean connectTransmitter(final ForgeDirection side, final Levels level) {
         ItemStack stackInSlot = driveInv.getStackInSlot(0);
-        if (stackInSlot.stackSize <= 0 || !(stackInSlot.getItem() instanceof ECalculatorCell cell)) {
+        if (stackInSlot == null || stackInSlot.stackSize <= 0 || !(stackInSlot.getItem() instanceof ECalculatorCell)) {
             return false;
         }
+        ECalculatorCell cell = (ECalculatorCell) stackInSlot.getItem();
 
         DriveStorageLevel cellLevel = cell.getLevel();
         switch (cellLevel) {
@@ -104,13 +106,13 @@ public class ECalculatorCellDrive extends ECalculatorPart implements IAEAppEngIn
         }
     }
 
-    
+
     public void onDisassembled() {
         super.onDisassembled();
         disconnectTransmitter();
     }
 
-    
+
     public void onAssembled() {
         super.onAssembled();
     }
@@ -124,7 +126,7 @@ public class ECalculatorCellDrive extends ECalculatorPart implements IAEAppEngIn
     }
 
 
-    
+
     public void readCustomNBT(final NBTTagCompound tag) {
         super.readCustomNBT(tag);
 
@@ -144,7 +146,7 @@ public class ECalculatorCellDrive extends ECalculatorPart implements IAEAppEngIn
         }
     }
 
-    
+
     public void writeCustomNBT(final NBTTagCompound tag) {
         super.writeCustomNBT(tag);
 
@@ -164,21 +166,21 @@ public class ECalculatorCellDrive extends ECalculatorPart implements IAEAppEngIn
         }
     }
 
-    
+
     public void saveChanges() {
         markDirty();
     }
 
-    
+
     public void notifyUpdate() {
         super.notifyUpdate();
-        if (world == null) {
+        if (worldObj == null) {
             return;
         }
-        world.notifyNeighborsOfStateChange(getPos(), world.getBlockState(getPos()).getBlock(), false);
+        worldObj.notifyBlocksOfNeighborChange(xCoord, yCoord, zCoord, worldObj.getBlock(xCoord, yCoord, zCoord));
     }
 
-    
+
     public void markDirty() {
         markChunkDirty();
     }
@@ -187,12 +189,12 @@ public class ECalculatorCellDrive extends ECalculatorPart implements IAEAppEngIn
 
         private static final CellInvFilter INSTANCE = new CellInvFilter();
 
-        
+
         public boolean allowExtract(IItemHandler inv, int slot, int amount) {
             return true;
         }
 
-        
+
         public boolean allowInsert(IItemHandler inv, int slot, ItemStack stack) {
             return stack != null && stack.stackSize > 0 && stack.getItem() instanceof ECalculatorCell;
         }

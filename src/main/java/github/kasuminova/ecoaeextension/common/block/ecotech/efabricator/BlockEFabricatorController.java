@@ -53,32 +53,21 @@ public class BlockEFabricatorController extends BlockController {
         this.setHardness(20.0F);
         this.setResistance(2000.0F);
         this.setHarvestLevel("pickaxe", 2);
-        this.fullBlock = false;
         this.setCreativeTab(CreativeTabNovaEng.INSTANCE);
         registryName = new ResourceLocation(ECOAEExtension.MOD_ID, "extendable_fabricator_subsystem_" + level);
-        machineRegistryName = new ResourceLocation(ModularMachinery.MODID, registryName.getPath());
-        setRegistryName(registryName);
-        setTranslationKey(ECOAEExtension.MOD_ID + '.' + registryName.getPath());
+        machineRegistryName = new ResourceLocation(ModularMachinery.MODID, registryName.getResourcePath());
+        setBlockName(ECOAEExtension.MOD_ID + '.' + registryName.getResourcePath());
     }
 
-    @Nonnull
-    public IBlockState getActualState(@Nonnull IBlockState state, @Nonnull IBlockAccess worldIn, @Nonnull BlockPos pos) {
-        if (FMLCommonHandler.instance().getEffectiveSide().isClient()) {
-            return super.getActualState(state, worldIn, pos);
-        }
-        return state;
-    }
-
-    
     public int getLightValue(@Nonnull final IBlockState state) {
         return state.getValue(FORMED) ? 10 : 0;
     }
 
-    
+
     public boolean onBlockActivated(final World worldIn, @Nonnull final BlockPos pos, @Nonnull final IBlockState state, @Nonnull final EntityPlayer playerIn, @Nonnull final ForgeDirection facing, final float hitX, final float hitY, final float hitZ) {
         if (!worldIn.isRemote) {
             TileEntity te = worldIn.getTileEntity(pos.getX(), pos.getY(), pos.getZ());
-            if (te instanceof EFabricatorController controller && controller.isStructureFormed()) {
+            if (te instanceof EFabricatorController && ((EFabricatorController) te).isStructureFormed()) {
                 playerIn.openGui(ECOAEExtension.MOD_ID, CommonProxy.GuiType.EFABRICATOR_CONTROLLER.ordinal(), worldIn, pos.getX(), pos.getY(), pos.getZ());
             }
         }
@@ -90,13 +79,13 @@ public class BlockEFabricatorController extends BlockController {
     }
 
     @Nullable
-    
+
     public TileEntity createTileEntity(final World world, final IBlockState state) {
         return new EFabricatorController(machineRegistryName);
     }
 
     @Nullable
-    
+
     public TileEntity createNewTileEntity(final World worldIn, final int meta) {
         return new EFabricatorController(machineRegistryName);
     }

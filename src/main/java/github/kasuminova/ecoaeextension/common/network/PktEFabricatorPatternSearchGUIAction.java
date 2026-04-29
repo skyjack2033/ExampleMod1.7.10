@@ -71,8 +71,8 @@ public class PktEFabricatorPatternSearchGUIAction implements IMessage, IMessageH
                 if (owner.insertPattern(stackInMouse)) {
                     stackInMouse.shrink(1);
                     if (stackInMouse.stackSize <= 0) {
-                        player.inventory.setItemStack(ItemStack.EMPTY);
-                        ECOAEExtension.NET_CHANNEL.sendTo(new PktMouseItemUpdate(ItemStack.EMPTY), player);
+                        player.inventory.setItemStack(null);
+                        ECOAEExtension.NET_CHANNEL.sendTo(new PktMouseItemUpdate(null), player);
                     } else {
                         ECOAEExtension.NET_CHANNEL.sendTo(new PktMouseItemUpdate(stackInMouse), player);
                     }

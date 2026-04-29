@@ -23,7 +23,7 @@ import net.minecraftforge.items.IItemHandler;
 import javax.annotation.Nonnull;
 import java.util.List;
 
-public abstract class EStorageCell<T extends IAEStack> extends AEBaseItem implements IStorageCell {
+public abstract class EStorageCell<T extends IAEStack<T>> extends AEBaseItem implements IStorageCell {
     @Getter
     protected final DriveStorageLevel level;
     protected final int totalBytes;

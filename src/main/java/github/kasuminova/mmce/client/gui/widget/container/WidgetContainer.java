@@ -30,10 +30,11 @@ public abstract class WidgetContainer extends DynamicWidget {
     }
 
     @Override
-    public void onGuiEvent(GuiEvent event) {
+    public boolean onGuiEvent(GuiEvent event) {
         for (DynamicWidget widget : widgets) {
             widget.onGuiEvent(event);
         }
+        return false;
     }
 
 }

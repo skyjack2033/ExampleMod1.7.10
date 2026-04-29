@@ -16,8 +16,8 @@ public class ECalculatorParallelProc extends ECalculatorPart {
     }
 
     public Block getBlock() {
-        if (this.block == null && this.world != null) {
-            this.block = this.world.getBlockState(this.pos).getBlock();
+        if (this.block == null && worldObj != null) {
+            this.block = worldObj.getBlock(xCoord, yCoord, zCoord);
         }
 
         return this.block;

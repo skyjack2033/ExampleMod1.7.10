@@ -2,7 +2,7 @@ package appeng.api.storage.data;
 
 import net.minecraft.nbt.NBTTagCompound;
 
-public interface IAEStack<StackType extends IAEStack> {
+public interface IAEStack<StackType extends IAEStack<StackType>> {
     long getStackSize();
     StackType setStackSize(long size);
     boolean isCraftable();

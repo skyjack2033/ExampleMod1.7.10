@@ -223,7 +223,7 @@ public abstract class MixinCraftingCPUClusterTwo {
                                                     fuzz.setStackSize(input[x].getStackSize());
                                                     if (key.isValidItemForSlot(x, fuzz.createItemStack(), this.getWorld())) {
                                                         IAEItemStack ais = r$extractItemsR(this.inventory, fuzz, Actionable.MODULATE, this.machineSrc, mediumType);
-                                                        ItemStack is = ais == null ? ItemStack.EMPTY : ais.createItemStack();
+                                                        ItemStack is = ais == null ? null : ais.createItemStack();
                                                         if (is != null && is.stackSize > 0) {
                                                             IAEItemStack receiver = AEItemStack.fromItemStack(is);
                                                             if (mediumType == MediumType.EF)
@@ -238,7 +238,7 @@ public abstract class MixinCraftingCPUClusterTwo {
                                                 }
                                             } else {
                                                 IAEItemStack ais = r$extractItemsR(this.inventory, input[x].copy(), Actionable.MODULATE, this.machineSrc, mediumType);
-                                                ItemStack is = ais == null ? ItemStack.EMPTY : ais.createItemStack();
+                                                ItemStack is = ais == null ? null : ais.createItemStack();
                                                 if (is != null && is.stackSize > 0) {
                                                     IAEItemStack receiver = input[x];
                                                     if (mediumType != MediumType.NULL)

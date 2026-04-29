@@ -38,7 +38,7 @@ public class PktEFabricatorGUIData implements IMessage, IMessageHandler<PktEFabr
                         .map(EFabricatorWorker::getQueue)
                         .map(queue -> {
                             EFabricatorWorker.CraftWork peek = queue.peek();
-                            return new EFabricatorData.WorkerStatus(peek != null ? peek.getOutput() : ItemStack.EMPTY, queue.size());
+                            return new EFabricatorData.WorkerStatus(peek != null ? peek.getOutput() : null, queue.size());
                         })
                         .collect(Collectors.toList())
         );
@@ -60,7 +60,7 @@ public class PktEFabricatorGUIData implements IMessage, IMessageHandler<PktEFabr
     @Override
     public IMessage onMessage(final PktEFabricatorGUIData message, final MessageContext ctx) {
         if (FMLCommonHandler.instance().getSide().isClient()) {
-            Minecraft.getMinecraft().addScheduledTask(() -> processPacket(message));
+            processPacket(message);
         }
         return null;
     }

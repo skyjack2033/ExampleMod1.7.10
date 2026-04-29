@@ -14,7 +14,7 @@ import java.awt.*;
 public class SlotItemVirtualJEISmall extends SlotItemVirtualJEI {
 
     public SlotItemVirtualJEISmall() {
-        this(ItemStack.EMPTY);
+        this(null);
     }
 
     public SlotItemVirtualJEISmall(final ItemStack stackInSlot) {

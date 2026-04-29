@@ -2,7 +2,6 @@ package github.kasuminova.ecoaeextension.common.tile.ecotech.ecalculator;
 
 import appeng.api.util.WorldCoord;
 import appeng.me.cluster.implementations.CraftingCPUCluster;
-import github.kasuminova.mmce.common.util.Sides;
 import github.kasuminova.ecoaeextension.common.util.BlockPos;
 import github.kasuminova.ecoaeextension.common.ecalculator.ECPUCluster;
 import it.unimi.dsi.fastutil.objects.ObjectArrayList;
@@ -10,6 +9,7 @@ import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.nbt.NBTTagList;
 import net.minecraft.network.play.server.S35PacketUpdateTileEntity;
 import net.minecraftforge.common.util.Constants;
+import cpw.mods.fml.common.FMLCommonHandler;
 
 import javax.annotation.Nonnull;
 import java.util.List;
@@ -43,7 +43,7 @@ public class ECalculatorThreadCore extends ECalculatorPart {
             }
         }
 
-        final boolean prevEmpty = cpus.stackSize <= 0;
+        final boolean prevEmpty = cpus.size() <= 0;
 
         ECPUCluster.from(cluster).novaeng_ec$setThreadCore(this);
         cpus.add(cluster);
@@ -96,20 +96,20 @@ public class ECalculatorThreadCore extends ECalculatorPart {
         if (controller != null) {
             controller.onClusterChanged();
         }
-        if (cpus.stackSize <= 0) {
+        if (cpus.size() <= 0) {
             markForUpdateSync();
         }
     }
 
     public long getUsedStorage() {
-        if (cpus.stackSize <= 0) {
+        if (cpus.size() <= 0) {
             return 0L;
         }
         return cpus.stream().mapToLong(CraftingCPUCluster::getAvailableStorage).sum();
     }
 
     @Nonnull
-    
+
     public S35PacketUpdateTileEntity getUpdatePacket() {
         try {
             WRITE_CPU_NBT.set(false);
@@ -120,7 +120,7 @@ public class ECalculatorThreadCore extends ECalculatorPart {
     }
 
     @Nonnull
-    
+
     public NBTTagCompound getUpdateTag() {
         try {
             WRITE_CPU_NBT.set(false);
@@ -130,7 +130,7 @@ public class ECalculatorThreadCore extends ECalculatorPart {
         }
     }
 
-    
+
     public void readCustomNBT(final NBTTagCompound compound) {
         super.readCustomNBT(compound);
 
@@ -167,7 +167,7 @@ public class ECalculatorThreadCore extends ECalculatorPart {
         }
     }
 
-    
+
     public void writeCustomNBT(final NBTTagCompound compound) {
         super.writeCustomNBT(compound);
 
@@ -175,7 +175,7 @@ public class ECalculatorThreadCore extends ECalculatorPart {
         compound.setByte("maxClusterCountHyperThread", (byte) maxHyperThreads);
         compound.setByte("threads", (byte) this.cpus.size());
 
-        if (Sides.isRunningOnClient() || (Sides.isRunningOnServer() && WRITE_CPU_NBT.get())) {
+        if (FMLCommonHandler.instance().getEffectiveSide().isClient() || (FMLCommonHandler.instance().getEffectiveSide().isServer() && WRITE_CPU_NBT.get())) {
             writeCPUNBT(compound);
         }
     }
@@ -193,13 +193,13 @@ public class ECalculatorThreadCore extends ECalculatorPart {
         compound.setTag("clusters", clustersTag);
     }
 
-    
+
     public void onDisassembled() {
         super.onDisassembled();
         markForUpdateSync();
     }
 
-    
+
     public void onAssembled() {
         super.onAssembled();
         markForUpdateSync();

@@ -1,8 +1,6 @@
 package github.kasuminova.ecoaeextension.common.item.estorage;
 
-import appeng.api.AEApi;
-import appeng.api.storage.IStorageChannel;
-import appeng.api.storage.channels.IItemStorageChannel;
+import appeng.api.storage.StorageChannel;
 import appeng.api.storage.data.IAEItemStack;
 import github.kasuminova.ecoaeextension.ECOAEExtension;
 import github.kasuminova.ecoaeextension.common.block.ecotech.estorage.prop.DriveStorageLevel;
@@ -35,7 +33,7 @@ public class EStorageCellItem extends EStorageCell<IAEItemStack> {
 
     @Nonnull
     @Override
-    public IStorageChannel getChannel() {
-        return AEApi.instance().storage().getStorageChannel(IItemStorageChannel.class);
+    public StorageChannel getChannel() {
+        return StorageChannel.ITEMS;
     }
 }

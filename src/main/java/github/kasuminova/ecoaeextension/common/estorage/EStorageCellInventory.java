@@ -8,7 +8,7 @@ import appeng.api.networking.security.IActionSource;
 import appeng.api.storage.ICellInventory;
 import appeng.api.storage.ICellInventoryHandler;
 import appeng.api.storage.ISaveProvider;
-import appeng.api.storage.IStorageChannel;
+import appeng.api.storage.StorageChannel;
 import appeng.api.storage.data.IAEItemStack;
 import appeng.api.storage.data.IAEStack;
 import appeng.api.storage.data.IItemList;
@@ -24,14 +24,14 @@ import net.minecraft.item.ItemStack;
 import net.minecraft.nbt.NBTTagCompound;
 import cpw.mods.fml.relauncher.ReflectionHelper;
 
-public class EStorageCellInventory<T extends IAEStack> extends AbstractCellInventory<T> {
+public class EStorageCellInventory<T extends IAEStack<T>> extends AbstractCellInventory<T> {
     public static final String ITEM_SLOT = "#";
     public static final String ITEM_SLOT_COUNT = "@";
     public static final String ITEM_TYPE_TAG = "it";
     public static final String ITEM_COUNT_TAG = "ic";
 
     private final EStorageCell<T> cellType;
-    private final IStorageChannel channel;
+    private final StorageChannel channel;
 
     @SuppressWarnings("deprecation")
     protected EStorageCellInventory(final EStorageCell<T> cellType, final ItemStack o, final ISaveProvider container) {
@@ -42,7 +42,7 @@ public class EStorageCellInventory<T extends IAEStack> extends AbstractCellInven
     }
 
     @SuppressWarnings({"unchecked", "rawtypes"})
-    public static <T extends IAEStack> ICellInventory<T> createInventory(final ItemStack o, final ISaveProvider container) {
+    public static <T extends IAEStack<T>> ICellInventory<T> createInventory(final ItemStack o, final ISaveProvider container) {
         try {
             if (o == null) {
                 throw new AppEngException("ItemStack was used as a cell, but was not a cell!");
@@ -59,7 +59,7 @@ public class EStorageCellInventory<T extends IAEStack> extends AbstractCellInven
 
             return new EStorageCellInventory<T>(cellType, o, container);
         } catch (final AppEngException e) {
-            ECOAEExtension.log.error(ThrowableUtil.stackTraceToString(e));
+            ECOAEExtension.log.error(e.toString());
             return null;
         }
     }
@@ -306,7 +306,7 @@ public class EStorageCellInventory<T extends IAEStack> extends AbstractCellInven
     }
 
     @Override
-    public IStorageChannel getChannel() {
+    public StorageChannel getChannel() {
         return this.channel;
     }
 

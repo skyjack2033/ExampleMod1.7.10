@@ -12,6 +12,7 @@ import github.kasuminova.ecoaeextension.client.gui.widget.efabricator.event.EFPa
 import github.kasuminova.ecoaeextension.common.container.ContainerEFabricatorPatternSearch;
 import github.kasuminova.ecoaeextension.common.container.data.EFabricatorPatternData;
 import github.kasuminova.ecoaeextension.common.tile.ecotech.efabricator.EFabricatorController;
+import org.lwjgl.opengl.GL11;
 import net.minecraft.client.gui.Gui;
 
 import net.minecraft.client.resources.I18n;
@@ -47,13 +48,13 @@ public class GuiEFabricatorPatternSearch extends GuiContainerDynamic<ContainerEF
 
     @Override
     protected void drawGuiContainerBackgroundLayer(final float partialTicks, final int mouseX, final int mouseY) {
-        GlStateManager.color(1.0F, 1.0F, 1.0F);
+        GL11.glColor3f(1.0F, 1.0F, 1.0F);
         this.mc.getTextureManager().bindTexture(TEXTURES_BACKGROUND_DARK);
         final int x = (this.width - this.xSize) / 2;
         final int y = (this.height - this.ySize) / 2;
-        Gui.drawModalRectWithCustomSizedTexture(x, y, 0, 0, 256, 202 + 10, 256, 256);
+        this.drawTexturedModalRect(x, y, 0, 0, 256, 202 + 10);
         this.mc.getTextureManager().bindTexture(TEXTURES_INVENTORY);
-        Gui.drawModalRectWithCustomSizedTexture(x + 17, y + 118 + 11, 1, 120, 162, 76, 256, 256);
+        this.drawTexturedModalRect(x + 17, y + 118 + 11, 1, 120, 162, 76);
         super.drawGuiContainerBackgroundLayer(partialTicks, mouseX, mouseY);
     }
 

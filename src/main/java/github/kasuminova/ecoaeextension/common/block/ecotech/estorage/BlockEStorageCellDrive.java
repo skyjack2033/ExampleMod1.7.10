@@ -1,8 +1,7 @@
 package github.kasuminova.ecoaeextension.common.block.ecotech.estorage;
 
-import appeng.api.AEApi;
 import appeng.api.storage.ICellInventoryHandler;
-import appeng.api.storage.IStorageChannel;
+import appeng.api.storage.StorageChannel;
 import appeng.api.storage.data.IAEStack;
 import appeng.tile.inventory.AppEngCellInventory;
 import github.kasuminova.ecoaeextension.ECOAEExtension;
@@ -79,7 +78,7 @@ public class BlockEStorageCellDrive extends BlockEStoragePart {
                 ItemStack stack = inv.getStackInSlot(i);
                 if (stack != null && stack.stackSize > 0) {
                     spawnAsEntity(worldIn, pos, stack);
-                    inv.setStackInSlot(i, ItemStack.EMPTY);
+                    inv.setStackInSlot(i, null);
                 }
             }
         }
@@ -118,9 +117,8 @@ public class BlockEStorageCellDrive extends BlockEStoragePart {
             return state;
         }
 
-        final Collection<IStorageChannel> storageChannels = AEApi.instance().storage().storageChannels();
         ICellInventoryHandler cellInventory = null;
-        for (final IStorageChannel channel : storageChannels) {
+        for (final StorageChannel channel : new StorageChannel[]{StorageChannel.ITEMS, StorageChannel.FLUIDS}) {
             cellInventory = handler.getCellInventory(stack, drive, channel);
             if (cellInventory != null) {
                 break;

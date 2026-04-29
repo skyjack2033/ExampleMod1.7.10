@@ -36,11 +36,11 @@ public record EStorageCellData(DriveStorageType type, DriveStorageLevel level, i
         if (watcher == null) {
             return null;
         }
-        ICellInventoryHandler<?> cellInventory = (ICellInventoryHandler<?>) watcher.getInternal();
+        ICellInventoryHandler cellInventory = (ICellInventoryHandler) watcher.getInternal();
         if (cellInventory == null) {
             return null;
         }
-        ICellInventory<?> cellInv = cellInventory.getCellInv();
+        ICellInventory cellInv = cellInventory.getCellInv();
         if (cellInv == null) {
             return null;
         }

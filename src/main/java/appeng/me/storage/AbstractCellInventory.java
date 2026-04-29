@@ -10,7 +10,7 @@ import net.minecraft.nbt.NBTTagCompound;
 /**
  * Stub for 1.7.10 port
  */
-public abstract class AbstractCellInventory<T extends IAEStack> implements ICellInventory<T> {
+public abstract class AbstractCellInventory<T extends IAEStack<T>> implements ICellInventory<T> {
 
     protected IItemList<T> cellItems;
     protected ISaveProvider container;
