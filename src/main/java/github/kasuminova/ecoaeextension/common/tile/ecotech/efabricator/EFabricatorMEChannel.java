@@ -1,5 +1,6 @@
 package github.kasuminova.ecoaeextension.common.tile.ecotech.efabricator;
 
+import appeng.api.implementations.ICraftingPatternItem;
 import appeng.api.networking.GridFlags;
 import appeng.api.networking.IGridNode;
 import appeng.api.networking.crafting.ICraftingPatternDetails;
@@ -106,8 +107,8 @@ public class EFabricatorMEChannel extends EFabricatorPart implements ICraftingPr
         }
 
         if (!pattern.isCraftable()) {
-            if (pattern instanceof FluidCraftingPatternDetails f) {
-                return pushFluidPattern(f,table);
+            if (pattern instanceof FluidCraftingPatternDetails) {
+                return pushFluidPattern((FluidCraftingPatternDetails) pattern, table);
             }
             return false;
         }
@@ -120,40 +121,40 @@ public class EFabricatorMEChannel extends EFabricatorPart implements ICraftingPr
         ItemStack[] remaining = new ItemStack[9];
         int size = 0;
         for (int i = 0; i < Math.min(table.getSizeInventory(), 9); ++i) {
-            var item = table.getStackInSlot(i);
-            if (item.stackSize <= 0){
-                remaining[i] = ItemStack.EMPTY;
+            ItemStack item = table.getStackInSlot(i);
+            if (item == null || item.stackSize <= 0){
+                remaining[i] = null;
             } else {
                 if (size == 0) {
-                    size = item.getCount();
+                    size = item.stackSize;
                 }
                 remaining[i] = getContainerItem(item);
             }
         }
 
-        output.setCount(output.getCount() * size);
+        output.stackSize = output.stackSize * size;
 
         return partController.offerWork(new EFabricatorWorker.CraftWork(remaining, output, size));
     }
 
     protected boolean pushFluidPattern(final FluidCraftingPatternDetails pattern,final InventoryCrafting table) {
         IAEItemStack[] outputs = pattern.getOutputs();
-        ItemStack output = outputs[0] != null ? outputs[0].getCachedItemStack(outputs[0].getStackSize()) : ItemStack.EMPTY;
+        ItemStack output = outputs[0] != null ? outputs[0].getItemStack() : null;
 
-        if (output.stackSize <= 0)return false;
+        if (output == null || output.stackSize <= 0) return false;
 
         ItemStack[] remaining = new ItemStack[9];
         int size = 0;
         for (int i = 0; i < Math.min(table.getSizeInventory(), 9); ++i) {
-            var item = table.getStackInSlot(i);
-            if (item.stackSize <= 0){
-                remaining[i] = ItemStack.EMPTY;
+            ItemStack item = table.getStackInSlot(i);
+            if (item == null || item.stackSize <= 0){
+                remaining[i] = null;
             } else {
                 if (size == 0) {
-                    size = item.getCount();
+                    size = item.stackSize;
                     if (item.getItem() instanceof ItemFluidPacket) {
-                        var amount = ((FluidStack) FakeItemRegister.getStack(item)).amount;
-                        var pamount = ((FluidStack) FakeItemRegister.getStack(pattern.getInputs()[i])).amount;
+                        int amount = ((FluidStack) FakeItemRegister.getStack(item)).amount;
+                        int pamount = ((FluidStack) FakeItemRegister.getStack(pattern.getInputs()[i].getItemStack())).amount;
                         size = amount/pamount;
                     }
                 }
@@ -161,33 +162,33 @@ public class EFabricatorMEChannel extends EFabricatorPart implements ICraftingPr
             }
         }
 
-        output.setCount(output.getCount() * size);
+        output.stackSize = output.stackSize * size;
 
         return partController.offerWork(new EFabricatorWorker.CraftWork(remaining, output, size));
     }
 
     private static ItemStack getContainerItem(ItemStack stackInSlot) {
         if (stackInSlot == null) {
-            return ItemStack.EMPTY;
+            return null;
         } else {
             Item i = stackInSlot.getItem();
             if (i != null && i.hasContainerItem(stackInSlot)) {
                 ItemStack ci = i.getContainerItem(stackInSlot);
                 if (ci != null && ci.stackSize > 0 && ci.isItemStackDamageable() && ci.getItemDamage() == ci.getMaxDamage()) {
-                    ci = ItemStack.EMPTY;
+                    ci = null;
                 }
 
-                ci.setCount(stackInSlot.getCount());
+                ci.stackSize = stackInSlot.stackSize;
                 return ci;
             } else if (stackInSlot != null && stackInSlot.stackSize > 0) {
-                stackInSlot.setCount(0);
+                stackInSlot.stackSize = 0;
                 return stackInSlot;
-            } else return ItemStack.EMPTY;
+            } else return null;
         }
     }
 
     public boolean insertPattern(final ItemStack patternStack) {
-        if (!PatternItemFilter.INSTANCE.allowInsert(null, -1, patternStack)) {
+        if (patternStack == null || patternStack.stackSize <= 0 || !(patternStack.getItem() instanceof ICraftingPatternItem)) {
             return false;
         }
         if (partController != null) {
@@ -219,12 +220,10 @@ public class EFabricatorMEChannel extends EFabricatorPart implements ICraftingPr
     }
 
     @Nonnull
-    @Override
     public DimensionalCoord getLocation() {
         return new DimensionalCoord(this);
     }
 
-    @Override
     public void gridChanged() {
     }
 
@@ -235,14 +234,13 @@ public class EFabricatorMEChannel extends EFabricatorPart implements ICraftingPr
     }
 
     @Nonnull
-    @Override
     public AECableType getCableConnectionType(@Nonnull final AEPartLocation dir) {
-        return AECableType.DENSE_SMART;
+        return AECableType.SMART;
     }
 
     @Override
     public void securityBreak() {
-        getWorld().destroyBlock(getPos(), true);
+        getWorld().setBlockToAir(xCoord, yCoord, zCoord);
     }
 
     @Override

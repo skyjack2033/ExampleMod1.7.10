@@ -1,12 +1,12 @@
 package github.kasuminova.ecoaeextension.common.tile.ecotech.efabricator;
 
+import appeng.api.AEApi;
 import appeng.api.storage.data.IAEItemStack;
 import appeng.api.storage.data.IItemList;
-import appeng.util.item.AEItemStack;
 import github.kasuminova.ecoaeextension.ECOAEExtension;
 import github.kasuminova.ecoaeextension.common.block.ecotech.efabricator.prop.WorkerStatus;
 import github.kasuminova.ecoaeextension.common.network.PktEFabricatorWorkerStatusUpdate;
-import hellfirepvp.modularmachinery.common.util.ItemUtils;
+
 import it.unimi.dsi.fastutil.objects.ObjectArrayList;
 import net.minecraft.item.ItemStack;
 import net.minecraft.nbt.NBTTagCompound;
@@ -61,10 +61,10 @@ public class EFabricatorWorker extends EFabricatorPart {
             while ((parallelism > completed) && (craftWork = queue.poll()) != null) {
                 for (ItemStack remain : craftWork.getRemaining()) {
                     if (remain != null && remain.stackSize > 0) {
-                        outputBuffer.add(AEItemStack.fromItemStack(remain));
+                        outputBuffer.add(AEApi.instance().storage().createItemStack(remain));
                     }
                 }
-                outputBuffer.add(AEItemStack.fromItemStack(craftWork.getOutput()));
+                outputBuffer.add(AEApi.instance().storage().createItemStack(craftWork.getOutput()));
                 completed += parallelism;
             }
         }
@@ -103,7 +103,7 @@ public class EFabricatorWorker extends EFabricatorPart {
     }
 
     public boolean hasWork() {
-        return queue != null && queue.stackSize > 0;
+        return queue != null && queue.size() > 0;
     }
 
     public boolean isFull() {
@@ -160,22 +160,22 @@ public class EFabricatorWorker extends EFabricatorPart {
     public void setStatus(final WorkerStatus status) {
         this.status = status;
         if (FMLCommonHandler.instance().getEffectiveSide().isServer()) {
-            markNoUpdateSync();
+            markForUpdateSync();
         }
     }
 
     @Override
-    public void markNoUpdate() {
+    public void markForUpdateSync() {
         if (FMLCommonHandler.instance().getEffectiveSide().isServer()) {
-            ECOAEExtension.NET_CHANNEL.sendToAllTracking(
+            ECOAEExtension.NET_CHANNEL.sendToAllAround(
                     new PktEFabricatorWorkerStatusUpdate(getPos(), status),
                     new NetworkRegistry.TargetPoint(
-                            world.provider.getDimension(),
-                            pos.getX(), pos.getY(), pos.getZ(),
+                            getWorld().provider.dimensionId,
+                            xCoord, yCoord, zCoord,
                             -1)
             );
         }
-        super.markNoUpdate();
+        super.markForUpdateSync();
     }
 
     @Override
@@ -210,7 +210,7 @@ public class EFabricatorWorker extends EFabricatorPart {
         }
 
         public boolean isEmpty() {
-            return queue.stackSize <= 0;
+            return queue.isEmpty();
         }
 
         public void add(final EFabricatorWorker.CraftWork craftWork) {
@@ -237,7 +237,7 @@ public class EFabricatorWorker extends EFabricatorPart {
         }
 
         public NBTTagCompound writeToNBT(final NBTTagCompound nbt) {
-            if (queue.stackSize <= 0) {
+            if (queue.size() <= 0) {
                 return nbt;
             }
 
@@ -269,7 +269,7 @@ public class EFabricatorWorker extends EFabricatorPart {
             for (int i = 0; i < stackSet.size(); i++) {
                 final ItemStack stack = stackSet.get(i);
                 if (stack != null && stack.stackSize > 0) {
-                    stackSetTag.setTag(STACK_SET_TAG_ID_PREFIX + i, stack.serializeNBT());
+                    stackSetTag.setTag(STACK_SET_TAG_ID_PREFIX + i, stack.writeToNBT(new NBTTagCompound()));
                 }
             }
             nbt.setTag(STACK_SET_TAG, stackSetTag);
@@ -285,7 +285,7 @@ public class EFabricatorWorker extends EFabricatorPart {
             // StackSet
             NBTTagCompound stackSetTag = nbt.getCompoundTag(STACK_SET_TAG);
             for (int i = 0; i < nbt.getInteger(STACK_SET_SIZE_TAG); i++) {
-                stackSet.add(new ItemStack(stackSetTag.getCompoundTag(STACK_SET_TAG_ID_PREFIX + i)));
+                stackSet.add(ItemStack.loadItemStackFromNBT(stackSetTag.getCompoundTag(STACK_SET_TAG_ID_PREFIX + i)));
             }
 
             // Queue
@@ -328,7 +328,7 @@ public class EFabricatorWorker extends EFabricatorPart {
             remaining = new ItemStack[nbt.getByte(REMAIN_SIZE_TAG)];
             for (int remainIdx = 0; remainIdx < remaining.length; remainIdx++) {
                 int setIdx = nbt.hasKey(REMAIN_TAG_PREFIX + remainIdx) ? nbt.getInteger(REMAIN_TAG_PREFIX + remainIdx) : -1;
-                remaining[remainIdx] = setIdx == -1 ? ItemStack.EMPTY : stackSet.get(setIdx);
+                remaining[remainIdx] = setIdx == -1 ? null : stackSet.get(setIdx);
             }
             output = stackSet.get(nbt.getInteger(OUTPUT_TAG));
             size = Math.max(1,nbt.getInteger(SIZE));
@@ -342,14 +342,14 @@ public class EFabricatorWorker extends EFabricatorPart {
             }
             final var output = this.output.copy();
             if (size > 0) {
-                final var eachOutput = this.output.getCount() / size;
+                final var eachOutput = this.output.stackSize / size;
                 final var outCount = i * eachOutput;
-                output.setCount(outCount);
-                this.output.shrink(outCount);
+                output.stackSize = outCount;
+                this.output.stackSize -= outCount;
                 size -= i;
                 return new CraftWork(inputs, output, i);
             } else {
-                output.setCount(0);
+                output.stackSize = 0;
                 return new CraftWork(inputs, output, 0);
             }
         }
@@ -362,7 +362,7 @@ public class EFabricatorWorker extends EFabricatorPart {
             remain:
             for (int remainIdx = 0; remainIdx < remaining.length; remainIdx++) {
                 final ItemStack remain = remaining[remainIdx];
-                if (remain.stackSize <= 0) {
+                if (remain == null || remain.stackSize <= 0) {
                     continue;
                 }
 
@@ -392,13 +392,17 @@ public class EFabricatorWorker extends EFabricatorPart {
         }
 
         public CraftWork copy() {
-            ItemStack[] remaining = Arrays.stream(this.remaining).map(ItemStack::copy).toArray(ItemStack[]::new);
-            return new CraftWork(remaining, output.copy(),this.size);
+            ItemStack[] remaining = new ItemStack[this.remaining.length];
+            for (int i = 0; i < this.remaining.length; i++) {
+                remaining[i] = this.remaining[i] == null ? null : this.remaining[i].copy();
+            }
+            return new CraftWork(remaining, output.copy(), this.size);
         }
 
         @Override
         public boolean equals(final Object obj) {
             if (obj instanceof CraftWork) {
+                CraftWork craftWork = (CraftWork) obj;
                 for (int i = 0; i < remaining.length; i++) {
                     if (!matchStacksStrict(remaining[i], craftWork.remaining[i])) {
                         return false;
@@ -410,7 +414,12 @@ public class EFabricatorWorker extends EFabricatorPart {
         }
 
         private static boolean matchStacksStrict(final ItemStack stack1, final ItemStack stack2) {
-            return ItemUtils.matchStacks(stack1, stack2) && stack1.getCount() == stack2.getCount();
+            if (stack1 == null && stack2 == null) return true;
+            if (stack1 == null || stack2 == null) return false;
+            return stack1.getItem() == stack2.getItem()
+                && stack1.getItemDamage() == stack2.getItemDamage()
+                && ItemStack.areItemStackTagsEqual(stack1, stack2)
+                && stack1.stackSize == stack2.stackSize;
         }
 
         public ItemStack[] getRemaining() {
