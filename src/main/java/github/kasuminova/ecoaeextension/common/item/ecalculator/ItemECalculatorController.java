@@ -1,7 +1,7 @@
 package github.kasuminova.ecoaeextension.common.item.ecalculator;
 
-import hellfirepvp.modularmachinery.common.block.BlockController;
 import hellfirepvp.modularmachinery.common.item.ItemBlockController;
+import net.minecraft.block.Block;
 import net.minecraft.client.resources.I18n;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.item.ItemStack;
@@ -14,8 +14,8 @@ import java.util.List;
 
 public class ItemECalculatorController extends ItemBlockController {
 
-    public ItemECalculatorController(final BlockController ctrlBlock) {
-        super(ctrlBlock);
+    public ItemECalculatorController(final Block block) {
+        super(block);
     }
 
     @Override

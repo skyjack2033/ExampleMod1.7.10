@@ -1,6 +1,7 @@
 package github.kasuminova.ecoaeextension.common.item.efabriactor;
 
 import github.kasuminova.ecoaeextension.common.block.ecotech.efabricator.BlockEFabricatorParallelProc;
+import net.minecraft.block.Block;
 import net.minecraft.client.resources.I18n;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.item.ItemBlock;
@@ -14,9 +15,9 @@ public class ItemEFabricatorParallelProc extends ItemBlock {
 
     private final BlockEFabricatorParallelProc myBlock;
 
-    public ItemEFabricatorParallelProc(final BlockEFabricatorParallelProc block) {
+    public ItemEFabricatorParallelProc(final Block block) {
         super(block);
-        this.myBlock = block;
+        this.myBlock = (BlockEFabricatorParallelProc) block;
     }
 
     @Override

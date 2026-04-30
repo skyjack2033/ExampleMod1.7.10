@@ -2,6 +2,7 @@ package github.kasuminova.ecoaeextension.common.item.ecalculator;
 
 import github.kasuminova.ecoaeextension.common.block.ecotech.ecalculator.BlockECalculatorThreadCore;
 import github.kasuminova.ecoaeextension.common.block.ecotech.ecalculator.BlockECalculatorThreadCoreHyper;
+import net.minecraft.block.Block;
 import net.minecraft.client.resources.I18n;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.item.ItemBlock;
@@ -15,10 +16,10 @@ public class ItemECalculatorThreadCore extends ItemBlock {
 
     private final BlockECalculatorThreadCore myBlock;
 
-    public ItemECalculatorThreadCore(final BlockECalculatorThreadCore block) {
+    public ItemECalculatorThreadCore(final Block block) {
         super(block);
-        this.myBlock = block;
-        block.setItem(this);
+        this.myBlock = (BlockECalculatorThreadCore) block;
+        ((BlockECalculatorThreadCore) block).setItem(this);
     }
 
     @Override
