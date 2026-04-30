@@ -10,6 +10,7 @@ public class ItemModularServer extends Item {
         setMaxStackSize(1);
         setCreativeTab(CreativeTabNovaEng.INSTANCE);
         setUnlocalizedName(ECOAEExtension.MOD_ID + '.' + registryName);
+        setTextureName(ECOAEExtension.MOD_ID + ":crystal_matrix");
     }
 
 }

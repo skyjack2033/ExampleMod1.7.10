@@ -17,6 +17,7 @@ public class EStorageCellItem extends EStorageCell<IAEItemStack> {
     public EStorageCellItem(final DriveStorageLevel level, final int millionBytes, final int byteMultiplier) {
         super(level, millionBytes, byteMultiplier);
         setUnlocalizedName(ECOAEExtension.MOD_ID + '.' + "estorage_cell_item_" + millionBytes + "m");
+        setTextureName(ECOAEExtension.MOD_ID + ":eco_item_storage_cell_" + millionBytes + "m");
     }
 
     @Override

@@ -37,6 +37,7 @@ public class ECalculatorCell extends Item {
         this.setMaxStackSize(1);
         this.setCreativeTab(CreativeTabNovaEng.INSTANCE);
         this.setUnlocalizedName(ECOAEExtension.MOD_ID + '.' + "ecalculator_cell_" + millionBytes + "m");
+        this.setTextureName(ECOAEExtension.MOD_ID + ":eco_cell_component_" + millionBytes + "m");
     }
 
     @Override

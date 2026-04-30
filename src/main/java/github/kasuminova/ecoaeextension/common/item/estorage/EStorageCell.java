@@ -44,6 +44,13 @@ public abstract class EStorageCell<T extends IAEStack<T>> extends AEBaseItem imp
         this.byteMultiplier = byteMultiplier;
         this.setMaxStackSize(1);
         this.setCreativeTab(CreativeTabNovaEng.INSTANCE);
+        this.setNoRepair();
+    }
+
+    @Override
+    @SideOnly(Side.CLIENT)
+    public void registerIcons(net.minecraft.client.renderer.texture.IIconRegister iconRegister) {
+        this.itemIcon = iconRegister.registerIcon(getIconString());
     }
 
     @SideOnly(Side.CLIENT)

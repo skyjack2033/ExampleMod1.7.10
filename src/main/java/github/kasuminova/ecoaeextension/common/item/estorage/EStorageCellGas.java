@@ -16,6 +16,7 @@ public class EStorageCellGas extends EStorageCell<IAEGasStack> {
     public EStorageCellGas(final DriveStorageLevel level, final int millionBytes, final int byteMultiplier) {
         super(level, millionBytes, byteMultiplier);
         setUnlocalizedName(ECOAEExtension.MOD_ID + '.' + "estorage_cell_gas_" + millionBytes + "m");
+        setTextureName(ECOAEExtension.MOD_ID + ":eco_chemical_storage_cell_" + millionBytes + "m");
     }
 
     @Override

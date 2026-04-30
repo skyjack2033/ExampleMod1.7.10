@@ -18,6 +18,7 @@ public class EStorageCellFluid extends EStorageCell<IAEFluidStack> {
     public EStorageCellFluid(final DriveStorageLevel level, final int millionBytes, final int byteMultiplier) {
         super(level, millionBytes, byteMultiplier);
         setUnlocalizedName(ECOAEExtension.MOD_ID + '.' + "estorage_cell_fluid_" + millionBytes + "m");
+        setTextureName(ECOAEExtension.MOD_ID + ":eco_fluid_storage_cell_" + millionBytes + "m");
     }
 
     @Override

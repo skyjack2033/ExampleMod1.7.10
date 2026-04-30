@@ -10,11 +10,7 @@
     "url": "https://github.com/skyjack2033/ExampleMod1.7.10",
     "logoFile": "assets/ecoaeextension/logo.png",
     "useDependencyInformation": true,
-    "dependencies": [
-      "appliedenergistics2"
-    ],
-    "requiredMods": [
-      "appliedenergistics2"
-    ]
+    "dependencies": [],
+    "requiredMods": []
   }
 ]
