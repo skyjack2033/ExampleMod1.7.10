@@ -37,25 +37,8 @@ public class PktPatternTermUploadPattern implements IMessage, IMessageHandler<Pk
             }
 
             // AccessorContainerPatternEncoder not available in AE2 rv3
-            return;
-                IMachineSet channelNodes;
-                if (itemObject instanceof IActionHost wirelessTerm) {
-                    channelNodes = wirelessTerm.getActionableNode().getGrid().getMachines(EFabricatorMEChannel.class);
-                } else {
-                    return;
-                }
-                for (final IGridNode channelNode : channelNodes) {
-                    EFabricatorMEChannel channel = (EFabricatorMEChannel) channelNode.getMachine();
-                    if (channel.insertPattern(patternStack)) {
-                        patternStack.stackSize--;
-                        if (patternStack.stackSize <= 0) {
-                            patternSlotOUT.putStack(null);
-                        } else {
-                            patternSlotOUT.putStack(patternStack);
-                        }
-                        break;
-                    }
-                }
+            try {
+                return;
             } catch (final Exception ignored) {
             }
         });
