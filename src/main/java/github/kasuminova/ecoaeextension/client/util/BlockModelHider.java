@@ -1,11 +1,8 @@
 package github.kasuminova.ecoaeextension.client.util;
 
-import hellfirepvp.modularmachinery.common.base.Mods;
-import hellfirepvp.modularmachinery.common.machine.DynamicMachine;
+import github.kasuminova.ecoaeextension.common.tile.ecotech.NovaMultiBlockBase;
 import hellfirepvp.modularmachinery.common.tiles.base.TileMultiblockMachineController;
-import hellfirepvp.modularmachinery.common.util.MiscUtils;
 import github.kasuminova.ecoaeextension.common.util.BlockPos;
-import cpw.mods.fml.common.Optional;
 import cpw.mods.fml.relauncher.Side;
 import cpw.mods.fml.relauncher.SideOnly;
 
@@ -15,44 +12,42 @@ import java.util.stream.Collectors;
 public class BlockModelHider {
 
     @SideOnly(Side.CLIENT)
-    public static void hideOrShowBlocks(final List<BlockPos> posList, final TileMultiblockMachineController ctrlPos) {
-        if (Mods.MBD.isPresent()) {
-            hideOrShowBlocksMBD(posList, ctrlPos);
-        } else if (Mods.COMPONENT_MODEL_HIDER.isPresent()) {
-            hideOrShowBlocksPlugin(posList, ctrlPos);
-        }
-    }
-
-    @SuppressWarnings("DuplicatedCode")
-    @Optional.Method(modid = "multiblocked")
-    private static void hideOrShowBlocksMBD(final List<BlockPos> posList, final TileMultiblockMachineController ctrl) {
-        DynamicMachine foundMachine = ctrl.getFoundMachine();
+    public static void hideOrShowBlocks(final List<BlockPos> posList, final NovaMultiBlockBase ctrl) {
         BlockPos ctrlPos = ctrl.getPos();
-        if (ctrl.isInvalid() || foundMachine == null) {
+        if (ctrl.isInvalid() || !ctrl.isStructureFormed()) {
             MultiblockWorldSavedData.removeDisableModel(ctrlPos);
             return;
         }
 
         MultiblockWorldSavedData.addDisableModel(ctrlPos, posList.stream()
-                .map(pos -> MiscUtils.rotateYCCWNorthUntil(pos, ctrl.getControllerRotation()))
+                .map(pos -> rotateYCCWNorthUntil(pos, ctrl.getControllerRotation()))
                 .map(pos -> pos.add(ctrlPos))
                 .collect(Collectors.toList()));
     }
 
-    @SuppressWarnings("DuplicatedCode")
-    @Optional.Method(modid = "component_model_hider")
-    private static void hideOrShowBlocksPlugin(final List<BlockPos> posList, final TileMultiblockMachineController ctrl) {
-        DynamicMachine foundMachine = ctrl.getFoundMachine();
+    /** Bridge for old MMCE-based controllers still using TileMultiblockMachineController. */
+    @SideOnly(Side.CLIENT)
+    public static void hideOrShowBlocks(final List<BlockPos> posList, final TileMultiblockMachineController ctrl) {
         BlockPos ctrlPos = ctrl.getPos();
-        if (ctrl.isInvalid() || foundMachine == null) {
+        if (ctrl.isInvalid() || !ctrl.isStructureFormed()) {
             MultiblockWorldSavedData.removeDisableModel(ctrlPos);
             return;
         }
 
         MultiblockWorldSavedData.addDisableModel(ctrlPos, posList.stream()
-                .map(pos -> MiscUtils.rotateYCCWNorthUntil(pos, ctrl.getControllerRotation()))
+                .map(pos -> rotateYCCWNorthUntil(pos, ctrl.getControllerRotation()))
                 .map(pos -> pos.add(ctrlPos))
                 .collect(Collectors.toList()));
     }
 
+    /** Rotate a relative BlockPos counter-clockwise from NORTH to the given direction. */
+    private static BlockPos rotateYCCWNorthUntil(BlockPos relPos, net.minecraftforge.common.util.ForgeDirection dir) {
+        switch (dir) {
+            case NORTH: return relPos;
+            case SOUTH: return new BlockPos(-relPos.getX(), relPos.getY(), -relPos.getZ());
+            case WEST:  return new BlockPos(-relPos.getZ(), relPos.getY(), relPos.getX());
+            case EAST:  return new BlockPos(relPos.getZ(), relPos.getY(), -relPos.getX());
+            default:    return relPos;
+        }
+    }
 }

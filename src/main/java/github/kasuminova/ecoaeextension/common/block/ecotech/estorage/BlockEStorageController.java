@@ -4,39 +4,25 @@ import github.kasuminova.ecoaeextension.ECOAEExtension;
 import github.kasuminova.ecoaeextension.common.CommonProxy;
 import github.kasuminova.ecoaeextension.common.core.CreativeTabNovaEng;
 import github.kasuminova.ecoaeextension.common.tile.ecotech.estorage.EStorageController;
-import hellfirepvp.modularmachinery.ModularMachinery;
-import hellfirepvp.modularmachinery.common.block.BlockController;
-import hellfirepvp.modularmachinery.common.machine.DynamicMachine;
-import hellfirepvp.modularmachinery.common.machine.MachineRegistry;
-import hellfirepvp.modularmachinery.common.util.IOInventory;
-import net.minecraft.block.state.IBlockState;
-import net.minecraft.entity.player.EntityPlayer;
-import net.minecraft.item.Item;
-import net.minecraft.item.ItemStack;
-import net.minecraft.nbt.NBTTagCompound;
-import net.minecraft.tileentity.TileEntity;
-import net.minecraftforge.common.util.ForgeDirection;
-
 import github.kasuminova.ecoaeextension.common.util.BlockPos;
+import net.minecraft.block.BlockContainer;
+import net.minecraft.block.material.Material;
+import net.minecraft.entity.player.EntityPlayer;
+import net.minecraft.tileentity.TileEntity;
 import net.minecraft.util.ResourceLocation;
-import net.minecraft.util.AxisAlignedBB;
 import net.minecraft.world.World;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import java.util.LinkedHashMap;
 import java.util.Map;
-import java.util.Random;
-import java.util.UUID;
 
 @SuppressWarnings("deprecation")
-public class BlockEStorageController extends BlockController {
+public class BlockEStorageController extends BlockContainer {
     public static final Map<ResourceLocation, BlockEStorageController> REGISTRY = new LinkedHashMap<>();
     public static final BlockEStorageController L4;
     public static final BlockEStorageController L6;
     public static final BlockEStorageController L9;
-
-    public static final AxisAlignedBB FORMED_AABB = AxisAlignedBB.getBoundingBox(-1.0D, -1.0D, -1.0D, 1.0D, 2.0D, 1.0D);
 
     static {
         L4 = new BlockEStorageController("l4");
@@ -48,40 +34,44 @@ public class BlockEStorageController extends BlockController {
     }
 
     protected final ResourceLocation registryName;
-    protected final ResourceLocation machineRegistryName;
+    protected final String machineName;
 
     public BlockEStorageController(final String level) {
+        super(Material.iron);
         this.setHardness(20.0F);
         this.setResistance(2000.0F);
         this.setHarvestLevel("pickaxe", 2);
         this.setCreativeTab(CreativeTabNovaEng.INSTANCE);
         registryName = new ResourceLocation(ECOAEExtension.MOD_ID, "extendable_digital_storage_subsystem_" + level);
-        machineRegistryName = new ResourceLocation(ModularMachinery.MODID, registryName.getResourcePath());
-        setBlockName(ECOAEExtension.MOD_ID + '.' + registryName.getResourcePath());
+        machineName = registryName.getResourcePath();
+        setBlockName(ECOAEExtension.MOD_ID + '.' + machineName);
     }
 
-    public int getLightValue(@Nonnull final IBlockState state) {
-        return state.getValue(FORMED) ? 10 : 0;
+    public ResourceLocation getRegistryName() {
+        return registryName;
+    }
+
+    public String getMachineName() {
+        return machineName;
     }
 
     @Override
-    public boolean onBlockActivated(final World worldIn, final int x, final int y, final int z, final EntityPlayer playerIn, final int side, final float hitX, final float hitY, final float hitZ) {
+    public boolean onBlockActivated(final World worldIn, final int x, final int y, final int z,
+                                    final EntityPlayer playerIn, final int side,
+                                    final float hitX, final float hitY, final float hitZ) {
         if (!worldIn.isRemote) {
             TileEntity te = worldIn.getTileEntity(x, y, z);
-            if (te instanceof EStorageController controller && controller.isStructureFormed()) {
-                playerIn.openGui(ECOAEExtension.MOD_ID, CommonProxy.GuiType.ESTORAGE_CONTROLLER.ordinal(), worldIn, x, y, z);
+            if (te instanceof EStorageController && ((EStorageController) te).isStructureFormed()) {
+                playerIn.openGui(ECOAEExtension.MOD_ID, CommonProxy.GuiType.ESTORAGE_CONTROLLER.ordinal(),
+                        worldIn, x, y, z);
             }
         }
         return true;
     }
 
-    public DynamicMachine getParentMachine() {
-        return MachineRegistry.getRegistry().getMachine(machineRegistryName);
-    }
-
     @Nullable
     @Override
     public TileEntity createNewTileEntity(final World worldIn, final int meta) {
-        return new EStorageController(machineRegistryName);
+        return new EStorageController(new ResourceLocation(ECOAEExtension.MOD_ID, machineName));
     }
 }

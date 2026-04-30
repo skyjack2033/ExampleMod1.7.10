@@ -14,12 +14,6 @@ import github.kasuminova.ecoaeextension.common.tile.ecotech.estorage.EStorageCel
 import github.kasuminova.ecoaeextension.common.tile.ecotech.estorage.EStorageController;
 import github.kasuminova.ecoaeextension.common.tile.ecotech.estorage.EStorageEnergyCell;
 import github.kasuminova.ecoaeextension.common.tile.ecotech.estorage.EStorageMEChannel;
-import hellfirepvp.modularmachinery.common.block.BlockCustomName;
-import hellfirepvp.modularmachinery.common.block.BlockDynamicColor;
-import hellfirepvp.modularmachinery.common.block.BlockMachineComponent;
-import hellfirepvp.modularmachinery.common.item.ItemBlockCustomName;
-import hellfirepvp.modularmachinery.common.item.ItemBlockMachineComponent;
-import hellfirepvp.modularmachinery.common.item.ItemBlockMachineComponentCustomName;
 import net.minecraft.block.Block;
 import net.minecraft.item.ItemBlock;
 import net.minecraft.tileentity.TileEntity;

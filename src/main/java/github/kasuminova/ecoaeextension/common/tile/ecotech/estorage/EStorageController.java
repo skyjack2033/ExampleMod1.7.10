@@ -4,38 +4,35 @@ import appeng.api.config.Actionable;
 import appeng.api.storage.ICellInventory;
 import appeng.api.storage.ICellInventoryHandler;
 import appeng.api.storage.data.IAEItemStack;
+import com.gtnewhorizon.structurelib.structure.IStructureDefinition;
 import github.kasuminova.ecoaeextension.ECOAEExtension;
 import github.kasuminova.ecoaeextension.client.util.BlockModelHider;
 import github.kasuminova.ecoaeextension.common.block.ecotech.estorage.BlockEStorageController;
 import github.kasuminova.ecoaeextension.common.estorage.ECellDriveWatcher;
-import github.kasuminova.ecoaeextension.common.tile.ecotech.EPartController;
+import github.kasuminova.ecoaeextension.common.tile.ecotech.NovaMultiBlockBase;
+import github.kasuminova.ecoaeextension.common.tile.ecotech.NovaPartController;
 import github.kasuminova.ecoaeextension.common.tile.ecotech.estorage.bus.EStorageBus;
-import hellfirepvp.modularmachinery.ModularMachinery;
-import hellfirepvp.modularmachinery.client.ClientProxy;
-import hellfirepvp.modularmachinery.common.machine.MachineRegistry;
 import net.minecraft.block.Block;
 import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.util.ResourceLocation;
 import github.kasuminova.ecoaeextension.common.util.BlockPos;
 import cpw.mods.fml.common.FMLCommonHandler;
+import cpw.mods.fml.relauncher.Side;
 
 import javax.annotation.Nullable;
 import java.util.*;
 
-public class EStorageController extends EPartController<EStoragePart> {
+public class EStorageController extends NovaPartController<EStoragePart> {
 
     public static final List<BlockPos> HIDE_POS_LIST = Arrays.asList(
             new BlockPos(0, 1, 0),
             new BlockPos(0, -1, 0),
-
             new BlockPos(1, 1, 0),
             new BlockPos(1, 0, 0),
             new BlockPos(1, -1, 0),
-
             new BlockPos(0, 1, 1),
             new BlockPos(0, 0, 1),
             new BlockPos(0, -1, 1),
-
             new BlockPos(1, 1, 1),
             new BlockPos(1, 0, 1),
             new BlockPos(1, -1, 1)
@@ -46,22 +43,39 @@ public class EStorageController extends EPartController<EStoragePart> {
 
     protected BlockEStorageController parentController = null;
     protected double idleDrain = 64;
-
     protected EStorageMEChannel channel = null;
+    protected String machineRegistryName = null;
 
     public EStorageController(final ResourceLocation machineRegistryName) {
         this.workMode = WorkMode.SYNC;
-        this.parentMachine = MachineRegistry.getRegistry().getMachine(machineRegistryName);
-        if (parentMachine != null && parentMachine.getStructureDef() != null) {
-            this.setStructureDef(parentMachine.getStructureDef());
-        }
-        this.parentController = BlockEStorageController.REGISTRY.get(new ResourceLocation(ECOAEExtension.MOD_ID, machineRegistryName.getResourcePath()));
+        this.machineRegistryName = machineRegistryName.getResourcePath();
+        this.parentController = BlockEStorageController.REGISTRY.get(
+                new ResourceLocation(ECOAEExtension.MOD_ID, this.machineRegistryName));
     }
 
     public EStorageController() {
         this.workMode = WorkMode.SYNC;
     }
 
+    // ---- StructureLib structure definition (future: define proper shapes) ----
+
+    @Override
+    protected IStructureDefinition<? extends NovaMultiBlockBase> getStructureDefinition() {
+        // TODO: Define StructureLib shapes for EStorage L4/L6/L9
+        return null;
+    }
+
+    @Override
+    protected String getShapeName() {
+        if (machineRegistryName != null) {
+            return machineRegistryName;
+        }
+        return "extendable_digital_storage_subsystem_l4";
+    }
+
+    // ---- Core tick logic ----
+
+    @Override
     protected boolean onSyncTick() {
         if (getWorld().getTotalWorldTime() % 5 == 0) {
             getCellDrives().forEach(EStorageCellDrive::updateWriteState);
@@ -85,6 +99,7 @@ public class EStorageController extends EPartController<EStoragePart> {
         }
     }
 
+    @Override
     protected void clearParts() {
         super.clearParts();
         this.energyCellsMax.clear();
@@ -92,67 +107,49 @@ public class EStorageController extends EPartController<EStoragePart> {
         this.channel = null;
     }
 
+    // ---- Power management ----
+
     public double injectPower(final double amt, final Actionable mode) {
         double toInject = amt;
-
         if (mode == Actionable.SIMULATE) {
             for (final EStorageEnergyCell cell : energyCellsMin) {
                 double prev = toInject;
                 toInject -= (toInject - cell.injectPower(toInject, mode));
-                if (toInject <= 0 || prev == toInject) {
-                    break;
-                }
+                if (toInject <= 0 || prev == toInject) break;
             }
             return toInject;
         }
-
         List<EStorageEnergyCell> toReInsert = new LinkedList<>();
         EStorageEnergyCell cell;
         while ((cell = energyCellsMin.poll()) != null) {
             double prev = toInject;
             toInject -= (toInject - cell.injectPower(toInject, mode));
             toReInsert.add(cell);
-            if (toInject <= 0 || prev < toInject) {
-                break;
-            }
+            if (toInject <= 0 || prev < toInject) break;
         }
-
-        if (toReInsert != null && toReInsert.size() > 0) {
-            energyCellsMin.addAll(toReInsert);
-        }
-
+        energyCellsMin.addAll(toReInsert);
         return toInject;
     }
 
     public double extractPower(final double amt, final Actionable mode) {
         double extracted = 0;
-
         if (mode == Actionable.SIMULATE) {
             for (final EStorageEnergyCell cell : energyCellsMax) {
                 double prev = extracted;
                 extracted += cell.extractPower(amt - extracted, mode);
-                if (extracted >= amt || prev >= extracted) {
-                    break;
-                }
+                if (extracted >= amt || prev >= extracted) break;
             }
             return extracted;
         }
-
         EStorageEnergyCell cell;
         List<EStorageEnergyCell> toReInsert = new LinkedList<>();
         while ((cell = energyCellsMax.poll()) != null) {
             double prev = extracted;
             extracted += cell.extractPower(amt - extracted, mode);
             toReInsert.add(cell);
-            if (extracted >= amt || prev == extracted) {
-                break;
-            }
+            if (extracted >= amt || prev == extracted) break;
         }
-
-        if (toReInsert != null && toReInsert.size() > 0) {
-            energyCellsMax.addAll(toReInsert);
-        }
-
+        energyCellsMax.addAll(toReInsert);
         return extracted;
     }
 
@@ -160,17 +157,11 @@ public class EStorageController extends EPartController<EStoragePart> {
         double newIdleDrain = 64;
         for (final EStorageCellDrive drive : getCellDrives()) {
             ECellDriveWatcher<IAEItemStack> watcher = drive.getWatcher();
-            if (watcher == null) {
-                continue;
-            }
+            if (watcher == null) continue;
             ICellInventoryHandler cellInventory = (ICellInventoryHandler) watcher.getInternal();
-            if (cellInventory == null) {
-                continue;
-            }
+            if (cellInventory == null) continue;
             ICellInventory cellInv = cellInventory.getCellInv();
-            if (cellInv == null) {
-                continue;
-            }
+            if (cellInv == null) continue;
             newIdleDrain += cellInv.getIdleDrain();
         }
         this.idleDrain = newIdleDrain;
@@ -179,42 +170,17 @@ public class EStorageController extends EPartController<EStoragePart> {
         }
     }
 
+    // ---- TileEntity lifecycle ----
+
     @Override
     protected Class<? extends Block> getControllerBlock() {
         return BlockEStorageController.class;
     }
 
-    public double getEnergyStored() {
-        double energyStored = 0;
-        for (final EStorageEnergyCell cell : energyCellsMax) {
-            double stored = cell.getEnergyStored();
-            if (stored <= 0.000001) {
-                break;
-            }
-            energyStored += stored;
-        }
-        return energyStored;
-    }
-
-    public double getMaxEnergyStore() {
-        double maxEnergyStore = 0;
-        for (final EStorageEnergyCell energyCell : energyCellsMax) {
-            maxEnergyStore += energyCell.getMaxEnergyStore();
-        }
-        return maxEnergyStore;
-    }
-
     @Override
     public void validate() {
         super.validate();
-        if (!FMLCommonHandler.instance().getEffectiveSide().isClient()) {
-            return;
-        }
-
-        ClientProxy.clientScheduler.addRunnable(() -> {
-            BlockModelHider.hideOrShowBlocks(HIDE_POS_LIST, this);
-            notifyStructureFormedState(isStructureFormed());
-        }, 0);
+        scheduleClientHideUpdate();
     }
 
     @Override
@@ -228,48 +194,58 @@ public class EStorageController extends EPartController<EStoragePart> {
     @Override
     public void onLoad() {
         super.onLoad();
-        if (!FMLCommonHandler.instance().getEffectiveSide().isClient()) {
-            return;
-        }
-        ClientProxy.clientScheduler.addRunnable(() -> {
-            BlockModelHider.hideOrShowBlocks(HIDE_POS_LIST, this);
-            notifyStructureFormedState(isStructureFormed());
-        }, 0);
+        scheduleClientHideUpdate();
     }
 
     @Override
     public void readCustomNBT(final NBTTagCompound compound) {
-        boolean prevLoaded = loaded;
-        loaded = false;
-
         super.readCustomNBT(compound);
-
-        loaded = prevLoaded;
-
-        if (FMLCommonHandler.instance().getEffectiveSide().isClient()) {
-            ClientProxy.clientScheduler.addRunnable(() -> {
-                BlockModelHider.hideOrShowBlocks(HIDE_POS_LIST, this);
-                notifyStructureFormedState(isStructureFormed());
-            }, 0);
+        if (compound.hasKey("machineRegistryName")) {
+            machineRegistryName = compound.getString("machineRegistryName");
+            if (machineRegistryName != null) {
+                this.parentController = BlockEStorageController.REGISTRY.get(
+                        new ResourceLocation(ECOAEExtension.MOD_ID, machineRegistryName));
+            }
         }
+        scheduleClientHideUpdate();
     }
 
     @Override
-    protected void readMachineNBT(final NBTTagCompound compound) {
-        super.readMachineNBT(compound);
-        if (compound.hasKey("parentMachine")) {
-            ResourceLocation rl = new ResourceLocation(compound.getString("parentMachine"));
-            parentMachine = MachineRegistry.getRegistry().getMachine(rl);
-            if (parentMachine != null) {
-                this.parentController = BlockEStorageController.REGISTRY.get(new ResourceLocation(ECOAEExtension.MOD_ID, parentMachine.getMachineName()));
-            } else {
-                ModularMachinery.log.info("Couldn't find machine named " + rl + " for controller at " + getPos());
-            }
+    public void writeCustomNBT(final NBTTagCompound compound) {
+        super.writeCustomNBT(compound);
+        if (machineRegistryName != null) {
+            compound.setString("machineRegistryName", machineRegistryName);
         }
     }
 
+    private void scheduleClientHideUpdate() {
+        if (FMLCommonHandler.instance().getEffectiveSide() == Side.CLIENT) {
+            BlockModelHider.hideOrShowBlocks(HIDE_POS_LIST, this);
+        }
+    }
+
+    // ---- Accessors ----
+
     public double getEnergyConsumePerTick() {
         return idleDrain;
+    }
+
+    public double getEnergyStored() {
+        double energyStored = 0;
+        for (final EStorageEnergyCell cell : energyCellsMax) {
+            double stored = cell.getEnergyStored();
+            if (stored <= 0.000001) break;
+            energyStored += stored;
+        }
+        return energyStored;
+    }
+
+    public double getMaxEnergyStore() {
+        double maxEnergyStore = 0;
+        for (final EStorageEnergyCell energyCell : energyCellsMax) {
+            maxEnergyStore += energyCell.getMaxEnergyStore();
+        }
+        return maxEnergyStore;
     }
 
     public List<EStorageBus> getStorageBuses() {
@@ -288,5 +264,4 @@ public class EStorageController extends EPartController<EStoragePart> {
     public BlockEStorageController getParentController() {
         return parentController;
     }
-
 }

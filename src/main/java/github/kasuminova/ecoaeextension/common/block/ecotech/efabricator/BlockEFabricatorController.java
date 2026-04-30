@@ -4,34 +4,19 @@ import github.kasuminova.ecoaeextension.ECOAEExtension;
 import github.kasuminova.ecoaeextension.common.CommonProxy;
 import github.kasuminova.ecoaeextension.common.core.CreativeTabNovaEng;
 import github.kasuminova.ecoaeextension.common.tile.ecotech.efabricator.EFabricatorController;
-import hellfirepvp.modularmachinery.ModularMachinery;
-import hellfirepvp.modularmachinery.common.block.BlockController;
-import hellfirepvp.modularmachinery.common.machine.DynamicMachine;
-import hellfirepvp.modularmachinery.common.machine.MachineRegistry;
-import hellfirepvp.modularmachinery.common.util.IOInventory;
-import net.minecraft.block.state.IBlockState;
+import net.minecraft.block.BlockContainer;
+import net.minecraft.block.material.Material;
 import net.minecraft.entity.player.EntityPlayer;
-import net.minecraft.item.Item;
-import net.minecraft.item.ItemStack;
-import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.tileentity.TileEntity;
-import net.minecraftforge.common.util.ForgeDirection;
-
 import net.minecraft.util.ResourceLocation;
-import github.kasuminova.ecoaeextension.common.util.BlockPos;
-import net.minecraft.world.IBlockAccess;
 import net.minecraft.world.World;
-import cpw.mods.fml.common.FMLCommonHandler;
 
-import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import java.util.LinkedHashMap;
 import java.util.Map;
-import java.util.Random;
-import java.util.UUID;
 
 @SuppressWarnings("deprecation")
-public class BlockEFabricatorController extends BlockController {
+public class BlockEFabricatorController extends BlockContainer {
     public static final Map<ResourceLocation, BlockEFabricatorController> REGISTRY = new LinkedHashMap<>();
     public static final BlockEFabricatorController L4;
     public static final BlockEFabricatorController L6;
@@ -47,22 +32,26 @@ public class BlockEFabricatorController extends BlockController {
     }
 
     protected final ResourceLocation registryName;
-    protected final ResourceLocation machineRegistryName;
+    protected final String machineName;
 
     public BlockEFabricatorController(final String level) {
+        super(Material.iron);
         this.setHardness(20.0F);
         this.setResistance(2000.0F);
         this.setHarvestLevel("pickaxe", 2);
         this.setCreativeTab(CreativeTabNovaEng.INSTANCE);
         registryName = new ResourceLocation(ECOAEExtension.MOD_ID, "extendable_fabricator_subsystem_" + level);
-        machineRegistryName = new ResourceLocation(ModularMachinery.MODID, registryName.getResourcePath());
-        setBlockName(ECOAEExtension.MOD_ID + '.' + registryName.getResourcePath());
+        machineName = registryName.getResourcePath();
+        setBlockName(ECOAEExtension.MOD_ID + '.' + machineName);
     }
 
-    public int getLightValue(@Nonnull final IBlockState state) {
-        return state.getValue(FORMED) ? 10 : 0;
+    public ResourceLocation getRegistryName() {
+        return registryName;
     }
 
+    public String getMachineName() {
+        return machineName;
+    }
 
     @Override
     public boolean onBlockActivated(final World worldIn, final int x, final int y, final int z,
@@ -78,19 +67,9 @@ public class BlockEFabricatorController extends BlockController {
         return true;
     }
 
-    public DynamicMachine getParentMachine() {
-        return MachineRegistry.getRegistry().getMachine(machineRegistryName);
-    }
-
     @Nullable
-
-    public TileEntity createTileEntity(final World world, final IBlockState state) {
-        return new EFabricatorController(machineRegistryName);
-    }
-
-    @Nullable
-
+    @Override
     public TileEntity createNewTileEntity(final World worldIn, final int meta) {
-        return new EFabricatorController(machineRegistryName);
+        return new EFabricatorController(new ResourceLocation(ECOAEExtension.MOD_ID, machineName));
     }
 }
