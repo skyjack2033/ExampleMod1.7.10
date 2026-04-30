@@ -7,7 +7,7 @@ import appeng.api.networking.security.IActionHost;
 import appeng.container.implementations.ContainerPatternEncoder;
 import appeng.container.slot.SlotRestrictedInput;
 import github.kasuminova.ecoaeextension.common.tile.ecotech.efabricator.EFabricatorMEChannel;
-import github.kasuminova.ecoaeextension.mixin.ae2.AccessorContainerPatternEncoder;
+
 import hellfirepvp.modularmachinery.ModularMachinery;
 import io.netty.buffer.ByteBuf;
 import net.minecraft.entity.player.EntityPlayerMP;
@@ -36,14 +36,8 @@ public class PktPatternTermUploadPattern implements IMessage, IMessageHandler<Pk
                 return;
             }
 
-            SlotRestrictedInput patternSlotOUT = ((AccessorContainerPatternEncoder) encoder).getPatternSlotOUT();
-            ItemStack patternStack = patternSlotOUT.getStack();
-            if (patternStack.stackSize <= 0) {
-                return;
-            }
-
-            try {
-                IGuiItemObject itemObject = ((AccessorContainerPatternEncoder) encoder).getIGuiItemObject();
+            // AccessorContainerPatternEncoder not available in AE2 rv3
+            return;
                 IMachineSet channelNodes;
                 if (itemObject instanceof IActionHost wirelessTerm) {
                     channelNodes = wirelessTerm.getActionableNode().getGrid().getMachines(EFabricatorMEChannel.class);

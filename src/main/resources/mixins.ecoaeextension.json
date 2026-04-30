@@ -13,9 +13,7 @@
     "MixinPacketInventoryAction"
   ],
   "mixins": [
-    "AccessorAbstractCellInventory",
     "AccessorCellRegistry",
-    "AccessorContainerPatternEncoder",
     "MixinTileChestFilter",
     "MixinTileDriveFilter"
   ]

@@ -20,7 +20,7 @@ import appeng.util.item.AEFluidStack;
 import appeng.util.item.AEItemStack;
 import github.kasuminova.ecoaeextension.ECOAEExtension;
 import github.kasuminova.ecoaeextension.common.item.estorage.EStorageCell;
-import github.kasuminova.ecoaeextension.mixin.ae2.AccessorAbstractCellInventory;
+
 
 import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
@@ -232,8 +232,8 @@ public class EStorageCellInventory<T extends IAEStack<T>> extends CellInventory<
                 if (mode == Actionable.MODULATE) {
                     l.setStackSize(l.getStackSize() + remainingItemCount);
                     // Update Count.
-                    AccessorAbstractCellInventory inv = (AccessorAbstractCellInventory) this;
-                    inv.setStoredItemCount(inv.getStoredItemCount() + remainingItemCount);
+                    // Accessor stubbed for AE2 rv3
+                    // stubbed
                     this.saveChangesES();
                 }
                 return r;
@@ -242,11 +242,11 @@ public class EStorageCellInventory<T extends IAEStack<T>> extends CellInventory<
                     long prev = l.getStackSize();
                     l.setStackSize(l.getStackSize() + input.getStackSize());
                     // Update Count.
-                    AccessorAbstractCellInventory inv = (AccessorAbstractCellInventory) this;
+                    // Accessor stubbed for AE2 rv3
                     if (prev == 0) {
-                        inv.setStoredItemTypes((short) (inv.getStoredItemTypes() + 1));
+                        // stubbed
                     }
-                    inv.setStoredItemCount(inv.getStoredItemCount() + input.getStackSize());
+                    // stubbed
                     this.saveChangesES();
                 }
                 return null;
@@ -267,9 +267,9 @@ public class EStorageCellInventory<T extends IAEStack<T>> extends CellInventory<
                         this.cellStacks.add(toWrite);
 
                         // Update Types and Counts.
-                        AccessorAbstractCellInventory inv = (AccessorAbstractCellInventory) this;
-                        inv.setStoredItemTypes((short) (inv.getStoredItemTypes() + 1));
-                        inv.setStoredItemCount(inv.getStoredItemCount() + remainingItemCount);
+                        // Accessor stubbed for AE2 rv3
+                        // stubbed
+                        // stubbed
                         this.saveChangesES();
                     }
                     return toReturn;
@@ -279,9 +279,9 @@ public class EStorageCellInventory<T extends IAEStack<T>> extends CellInventory<
                     this.cellStacks.add(input);
 
                     // Update Types and Counts.
-                    AccessorAbstractCellInventory inv = (AccessorAbstractCellInventory) this;
-                    inv.setStoredItemTypes((short) (inv.getStoredItemTypes() + 1));
-                    inv.setStoredItemCount(inv.getStoredItemCount() + input.getStackSize());
+                    // Accessor stubbed for AE2 rv3
+                    // stubbed
+                    // stubbed
                     this.saveChangesES();
                 }
 
@@ -317,8 +317,8 @@ public class EStorageCellInventory<T extends IAEStack<T>> extends CellInventory<
                 if (mode == Actionable.MODULATE) {
                     l.setStackSize(l.getStackSize() - size);
                     // Update Count.
-                    AccessorAbstractCellInventory inv = (AccessorAbstractCellInventory) this;
-                    inv.setStoredItemCount(inv.getStoredItemCount() - size);
+                    // Accessor stubbed for AE2 rv3
+                    // stubbed
                     this.saveChangesES();
                 }
             }
