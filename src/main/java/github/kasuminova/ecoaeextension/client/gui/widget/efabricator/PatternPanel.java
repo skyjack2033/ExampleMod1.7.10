@@ -24,8 +24,6 @@ import net.minecraft.client.Minecraft;
 import net.minecraft.client.resources.I18n;
 import net.minecraft.item.ItemStack;
 import github.kasuminova.ecoaeextension.common.util.BlockPos;
-import mezz.jei.search.GeneralizedSuffixTree;
-import mezz.jei.search.ISearchStorage;
 
 import java.util.*;
 import java.util.concurrent.atomic.AtomicBoolean;
@@ -50,8 +48,8 @@ public class PatternPanel extends SizedColumn {
     private static final Pattern COLOR_CODE_PATTERN = Pattern.compile("§.");
 
     private final Map<BlockPos, Int2ObjectMap<PatternSlot>> patterns = new Object2ObjectLinkedOpenHashMap<>();
-    private ISearchStorage<PatternSlot> inputSearchStorage = new GeneralizedSuffixTree<>();
-    private ISearchStorage<PatternSlot> outputSearchStorage = new GeneralizedSuffixTree<>();
+    private SimpleSearchStorage<PatternSlot> inputSearchStorage = new SimpleSearchStorage<>();
+    private SimpleSearchStorage<PatternSlot> outputSearchStorage = new SimpleSearchStorage<>();
 
     private String inputSearchContent = "";
     private String outputSearchContent = "";
@@ -117,8 +115,8 @@ public class PatternPanel extends SizedColumn {
             });
 
             if (fullUpdate || somethingRemoved.get()) {
-                inputSearchStorage = new GeneralizedSuffixTree<>();
-                outputSearchStorage = new GeneralizedSuffixTree<>();
+                inputSearchStorage = new SimpleSearchStorage<>();
+                outputSearchStorage = new SimpleSearchStorage<>();
 
                 for (Int2ObjectMap<PatternSlot> slotPattern : patterns.values()) {
                     for (final PatternSlot slot : slotPattern.values()) {
