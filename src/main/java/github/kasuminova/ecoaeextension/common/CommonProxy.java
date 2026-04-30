@@ -16,9 +16,7 @@ import github.kasuminova.ecoaeextension.common.tile.ecotech.efabricator.EFabrica
 import github.kasuminova.ecoaeextension.common.tile.ecotech.efabricator.EFabricatorPatternBus;
 import github.kasuminova.ecoaeextension.common.tile.ecotech.estorage.EStorageController;
 import github.kasuminova.ecoaeextension.common.util.MachineCoolants;
-import github.kasuminova.ecoaeextension.mixin.ae2.AccessorCellRegistry;
 import java.io.File;
-import java.util.List;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.tileentity.TileEntity;
 import net.minecraft.util.MathHelper;
@@ -54,8 +52,7 @@ public class CommonProxy implements IGuiHandler {
 
     public void init() {
         if (AEApi.instance() != null) {
-            List<ICellHandler> handlers = ((AccessorCellRegistry) (AEApi.instance().registries().cell())).getHandlers();
-            handlers.add(0, EStorageCellHandler.INSTANCE);
+            AEApi.instance().registries().cell().addCellHandler(EStorageCellHandler.INSTANCE);
         }
     }
 
