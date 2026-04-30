@@ -24,7 +24,14 @@ public abstract class EPartController<P extends EPart<?>> extends TileCustomCont
 
     
     public void doControllerTick() {
-        if (!this.doStructureCheck() || !this.isStructureFormed()) {
+        boolean structureValid = this.doStructureCheck();
+        if (structureValid) {
+            this.setStructureFormed(true);
+        } else {
+            this.setStructureFormed(false);
+        }
+
+        if (!this.isStructureFormed()) {
             disassemble();
             return;
         }

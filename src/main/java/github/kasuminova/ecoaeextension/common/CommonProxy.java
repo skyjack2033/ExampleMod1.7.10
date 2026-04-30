@@ -21,6 +21,7 @@ import github.kasuminova.ecoaeextension.common.tile.ecotech.ecalculator.ECalcula
 import github.kasuminova.ecoaeextension.common.tile.ecotech.efabricator.EFabricatorController;
 import github.kasuminova.ecoaeextension.common.tile.ecotech.efabricator.EFabricatorPatternBus;
 import github.kasuminova.ecoaeextension.common.tile.ecotech.estorage.EStorageController;
+import hellfirepvp.modularmachinery.common.machine.MachineRegistry;
 import github.kasuminova.ecoaeextension.common.util.MachineCoolants;
 import java.io.File;
 import net.minecraft.entity.player.EntityPlayer;
@@ -52,6 +53,8 @@ public class CommonProxy implements IGuiHandler {
         RegistryBlocks.registerBlocks();
         RegistryBlocks.registerTileEntities();
         RegistryItems.registerItems();
+
+        MachineRegistry.getRegistry().loadMachineryDefinitions();
 
         NetworkRegistry.INSTANCE.registerGuiHandler(ECOAEExtension.instance, this);
 

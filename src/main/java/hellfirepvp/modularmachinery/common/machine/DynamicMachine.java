@@ -2,6 +2,7 @@ package hellfirepvp.modularmachinery.common.machine;
 
 import github.kasuminova.ecoaeextension.common.util.BlockPos;
 import github.kasuminova.mmce.common.helper.IDynamicPatternInfo;
+import github.kasuminova.mmce.common.util.StructureDefinition;
 import hellfirepvp.modularmachinery.common.tiles.base.TileEntitySynchronized;
 import net.minecraft.util.math.Vec3i;
 
@@ -12,9 +13,18 @@ import java.util.Optional;
 public class DynamicMachine {
 
     private final String machineName;
+    private StructureDefinition structureDef;
 
     public DynamicMachine(String machineName) {
         this.machineName = machineName;
+    }
+
+    public void setStructureDef(StructureDefinition def) {
+        this.structureDef = def;
+    }
+
+    public StructureDefinition getStructureDef() {
+        return structureDef;
     }
 
     public String getMachineName() {

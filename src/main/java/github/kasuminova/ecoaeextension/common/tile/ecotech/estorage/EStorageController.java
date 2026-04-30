@@ -52,6 +52,9 @@ public class EStorageController extends EPartController<EStoragePart> {
     public EStorageController(final ResourceLocation machineRegistryName) {
         this.workMode = WorkMode.SYNC;
         this.parentMachine = MachineRegistry.getRegistry().getMachine(machineRegistryName);
+        if (parentMachine != null && parentMachine.getStructureDef() != null) {
+            this.setStructureDef(parentMachine.getStructureDef());
+        }
         this.parentController = BlockEStorageController.REGISTRY.get(new ResourceLocation(ECOAEExtension.MOD_ID, machineRegistryName.getResourcePath()));
     }
 

@@ -76,6 +76,9 @@ public class ECalculatorController extends EPartController<ECalculatorPart> {
     public ECalculatorController(final ResourceLocation machineRegistryName) {
         this();
         this.parentMachine = MachineRegistry.getRegistry().getMachine(machineRegistryName);
+        if (parentMachine != null && parentMachine.getStructureDef() != null) {
+            this.setStructureDef(parentMachine.getStructureDef());
+        }
         this.parentController = BlockECalculatorController.REGISTRY.get(new ResourceLocation(ECOAEExtension.MOD_ID, machineRegistryName.getResourcePath()));
     }
 

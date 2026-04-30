@@ -113,6 +113,9 @@ public class EFabricatorController extends EPartController<EFabricatorPart> {
     public EFabricatorController(final ResourceLocation machineRegistryName) {
         this();
         this.parentMachine = MachineRegistry.getRegistry().getMachine(machineRegistryName);
+        if (parentMachine != null && parentMachine.getStructureDef() != null) {
+            this.setStructureDef(parentMachine.getStructureDef());
+        }
         this.parentController = BlockEFabricatorController.REGISTRY.get(new ResourceLocation(ECOAEExtension.MOD_ID, machineRegistryName.getResourcePath()));
     }
 
