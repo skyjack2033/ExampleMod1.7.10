@@ -45,11 +45,19 @@ public class NEIMultiBlockHandler extends TemplateRecipeHandler {
     public void loadCraftingRecipes(ItemStack result) {
         Block block = Block.getBlockFromItem(result.getItem());
         if (block == null) return;
+        String blockName = Block.blockRegistry.getNameForObject(block);
+        if (blockName == null) return;
 
+        // Only match controller blocks whose registry name matches a machine definition
         for (DynamicMachine machine : MachineRegistry.getRegistry().getLoadedMachines()) {
             StructureDefinition def = machine.getStructureDef();
             if (def == null) continue;
-            arecipes.add(new CachedMultiBlockRecipe(def, result));
+            // Match by checking if the block name contains the machine registry name
+            if (blockName.contains(def.registryName) || def.registryName.contains(
+                    blockName.substring(blockName.lastIndexOf(':') + 1))) {
+                arecipes.add(new CachedMultiBlockRecipe(def, result));
+                return; // One structure per controller
+            }
         }
     }
 
