@@ -14,7 +14,6 @@ import java.util.List;
 @SuppressWarnings({"MethodMayBeStatic", "UnusedReturnValue"})
 public class RegistryItems {
     public static final List<Item> ITEMS_TO_REGISTER = new LinkedList<>();
-    public static final List<Item> ITEM_MODELS_TO_REGISTER = new LinkedList<>();
 
     public static void registerItems() {
         ITEMS_TO_REGISTER.add(EStorageCellItem.LEVEL_A);
@@ -36,20 +35,13 @@ public class RegistryItems {
             registerItem(item);
         }
         ITEMS_TO_REGISTER.clear();
-
-        for (Item item : ITEM_MODELS_TO_REGISTER) {
-            registerItem(item);
-        }
-        ITEM_MODELS_TO_REGISTER.clear();
     }
 
     public static void registerItemModels() {
         // Item model registration - stubbed for 1.7.10 port
-        ITEM_MODELS_TO_REGISTER.clear();
     }
 
     public static <T extends Item> T registerItem(T item) {
-        ITEM_MODELS_TO_REGISTER.add(item);
         GenericRegistryPrimer.INSTANCE.register(item);
 
         String name = item.getUnlocalizedName();
