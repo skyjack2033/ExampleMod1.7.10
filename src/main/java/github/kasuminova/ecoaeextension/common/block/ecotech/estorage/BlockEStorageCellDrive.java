@@ -3,8 +3,7 @@ package github.kasuminova.ecoaeextension.common.block.ecotech.estorage;
 import appeng.api.storage.ICellInventoryHandler;
 import appeng.api.storage.StorageChannel;
 import appeng.api.storage.data.IAEStack;
-import appeng.tile.inventory.AppEngCellInventory;
-import appeng.util.helpers.ItemHandlerUtil;
+import appeng.tile.inventory.InventoryAdapter;
 import github.kasuminova.ecoaeextension.ECOAEExtension;
 import github.kasuminova.ecoaeextension.common.block.ecotech.estorage.prop.DriveStatus;
 import github.kasuminova.ecoaeextension.common.block.ecotech.estorage.prop.DriveStorageCapacity;
@@ -66,12 +65,12 @@ public class BlockEStorageCellDrive extends BlockEStoragePart {
         TileEntity te = worldIn.getTileEntity(x, y, z);
         if (te instanceof EStorageCellDrive) {
             EStorageCellDrive drive = (EStorageCellDrive) te;
-            AppEngCellInventory inv = drive.getDriveInv();
+            InventoryAdapter inv = drive.getDriveInv();
             for (int i = 0; i < inv.getSlots(); i++) {
                 ItemStack stack = inv.getStackInSlot(i);
                 if (stack != null && stack.stackSize > 0) {
                     dropBlockAsItem(worldIn, x, y, z, stack);
-                    ItemHandlerUtil.setStackInSlot(inv, i, null);
+                    inv.setStackInSlot(i, null);
                 }
             }
         }
@@ -84,7 +83,7 @@ public class BlockEStorageCellDrive extends BlockEStoragePart {
         TileEntity te = world.getTileEntity(x, y, z);
         if (te instanceof EStorageCellDrive) {
             EStorageCellDrive drive = (EStorageCellDrive) te;
-            AppEngCellInventory driveInv = drive.getDriveInv();
+            InventoryAdapter driveInv = drive.getDriveInv();
             ItemStack stack = driveInv.getStackInSlot(0);
             return (stack != null && stack.stackSize > 0) ? 6 : 2;
         }
@@ -98,7 +97,7 @@ public class BlockEStorageCellDrive extends BlockEStoragePart {
             return state;
         }
         EStorageCellDrive drive = (EStorageCellDrive) te;
-        AppEngCellInventory driveInv = drive.getDriveInv();
+        InventoryAdapter driveInv = drive.getDriveInv();
         ItemStack stack = driveInv.getStackInSlot(0);
         if (stack.stackSize <= 0) {
             return state;

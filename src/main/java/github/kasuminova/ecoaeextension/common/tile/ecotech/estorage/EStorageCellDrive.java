@@ -16,11 +16,10 @@ import appeng.api.storage.data.IItemList;
 import appeng.api.storage.ISaveProvider;
 import appeng.me.GridAccessException;
 import appeng.me.helpers.AENetworkProxy;
-import appeng.tile.inventory.AppEngCellInventory;
-import appeng.util.helpers.ItemHandlerUtil;
-import appeng.util.inv.IAEAppEngInventory;
-import appeng.util.inv.InvOperation;
-import appeng.util.inv.filter.IAEItemFilter;
+import appeng.tile.inventory.AppEngInternalInventory;
+import appeng.tile.inventory.IAEAppEngInventory;
+import appeng.tile.inventory.InvOperation;
+import appeng.tile.inventory.InventoryAdapter;
 import github.kasuminova.ecoaeextension.ECOAEExtension;
 import github.kasuminova.ecoaeextension.common.block.ecotech.estorage.BlockEStorageController;
 import github.kasuminova.ecoaeextension.common.block.ecotech.estorage.prop.DriveStorageCapacity;
@@ -36,6 +35,7 @@ import github.kasuminova.ecoaeextension.common.item.estorage.EStorageCellItem;
 import github.kasuminova.ecoaeextension.common.network.PktCellDriveStatusUpdate;
 import hellfirepvp.modularmachinery.common.base.Mods;
 import it.unimi.dsi.fastutil.objects.Reference2ObjectOpenHashMap;
+import net.minecraft.inventory.IInventory;
 import net.minecraft.item.ItemStack;
 import net.minecraft.nbt.NBTTagCompound;
 import net.minecraftforge.common.util.ForgeDirection;
@@ -43,7 +43,6 @@ import github.kasuminova.ecoaeextension.common.util.BlockPos;
 
 import cpw.mods.fml.common.FMLCommonHandler;
 import cpw.mods.fml.common.network.NetworkRegistry;
-import net.minecraftforge.items.IItemHandler;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
@@ -57,7 +56,7 @@ import static appeng.helpers.ItemStackHelper.stackWriteToNBT;
 @SuppressWarnings("rawtypes")
 public class EStorageCellDrive extends EStoragePart implements ISaveProvider, IAEAppEngInventory {
 
-    protected final AppEngCellInventory driveInv = new AppEngCellInventory(this, 1);
+    protected final InventoryAdapter driveInv = new InventoryAdapter(new AppEngInternalInventory(this, 1));
     protected final Map<StorageChannel, IMEInventoryHandler> inventoryHandlers = new Reference2ObjectOpenHashMap<>();
 
     protected EStorageCellHandler cellHandler = null;
@@ -69,10 +68,9 @@ public class EStorageCellDrive extends EStoragePart implements ISaveProvider, IA
     protected boolean writing = false;
 
     public EStorageCellDrive() {
-        this.driveInv.setFilter(CellInvFilter.INSTANCE);
+        // setFilter not available in AE2 rv3-beta-690
     }
 
-    @Override
     public int getInventoryStackLimit() {
         return 64;
     }
@@ -180,7 +178,7 @@ public class EStorageCellDrive extends EStoragePart implements ISaveProvider, IA
             if (cellInventory == null) {
                 continue;
             }
-            driveInv.setHandler(0, cellInventory);
+            // driveInv.setHandler(0, cellInventory); // Not available in AE2 rv3-beta-690
             watcher = new ECellDriveWatcher<>(cellInventory, channel, this);
             if (partController != null) {
                 watcher.setPriority(partController.getChannel().getPriority());
@@ -272,7 +270,7 @@ public class EStorageCellDrive extends EStoragePart implements ISaveProvider, IA
     }
 
     @Override
-    public void onChangeInventory(final IItemHandler inv, final int slot, final InvOperation mc, final ItemStack removed, final ItemStack added) {
+    public void onChangeInventory(final IInventory inv, final int slot, final InvOperation mc, final ItemStack removed, final ItemStack added) {
         this.isCached = false; // recalculate the storage cell.
         this.updateHandler(true);
         this.markForUpdateSync();
@@ -361,7 +359,7 @@ public class EStorageCellDrive extends EStoragePart implements ISaveProvider, IA
         }
     }
 
-    public AppEngCellInventory getDriveInv() {
+    public InventoryAdapter getDriveInv() {
         return driveInv;
     }
 
@@ -390,7 +388,7 @@ public class EStorageCellDrive extends EStoragePart implements ISaveProvider, IA
         final NBTTagCompound opt = tag.getCompoundTag("driveInv");
         for (int x = 0; x < driveInv.getSlots(); x++) {
             final NBTTagCompound item = opt.getCompoundTag("item" + x);
-            ItemHandlerUtil.setStackInSlot(driveInv, x, stackFromNBT(item));
+            driveInv.setStackInSlot(x, stackFromNBT(item));
         }
 
         if (FMLCommonHandler.instance().getEffectiveSide().isClient()) {
@@ -428,19 +426,4 @@ public class EStorageCellDrive extends EStoragePart implements ISaveProvider, IA
         markChunkDirty();
     }
 
-    private static class CellInvFilter implements IAEItemFilter {
-
-        private static final CellInvFilter INSTANCE = new CellInvFilter();
-
-        @Override
-        public boolean allowExtract(IItemHandler inv, int slot, int amount) {
-            return true;
-        }
-
-        @Override
-        public boolean allowInsert(IItemHandler inv, int slot, ItemStack stack) {
-            return stack != null && stack.stackSize > 0 && EStorageCellHandler.getHandler(stack) != null;
-        }
-
-    }
 }

@@ -21,10 +21,6 @@ import appeng.me.GridAccessException;
 import appeng.me.helpers.AENetworkProxy;
 import appeng.me.helpers.IGridProxyable;
 import appeng.me.helpers.MachineSource;
-import appeng.util.Platform;
-import com.glodblock.github.common.item.ItemFluidPacket;
-import com.glodblock.github.common.item.fake.FakeItemRegister;
-import com.glodblock.github.util.FluidCraftingPatternDetails;
 import github.kasuminova.ecoaeextension.common.block.ecotech.efabricator.BlockEFabricatorMEChannel;
 import net.minecraft.inventory.InventoryCrafting;
 import net.minecraft.item.Item;
@@ -34,6 +30,7 @@ import net.minecraftforge.fluids.FluidStack;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
+import java.lang.reflect.Method;
 import java.util.Arrays;
 import java.util.List;
 
@@ -93,7 +90,7 @@ public class EFabricatorMEChannel extends EFabricatorPart implements ICraftingPr
         List<EFabricatorPatternBus> patternBuses = controller.getPatternBuses();
         patternBuses.stream()
                 .flatMap(patternBus -> patternBus.getDetails().stream())
-                .filter(details -> details.isCraftable() || details instanceof FluidCraftingPatternDetails)
+                .filter(details -> details.isCraftable() || FluidCraftUtil.isFluidPattern(details))
                 .forEach(details -> craftingTracker.addCraftingOption(this, details));
     }
 
@@ -104,8 +101,8 @@ public class EFabricatorMEChannel extends EFabricatorPart implements ICraftingPr
         }
 
         if (!pattern.isCraftable()) {
-            if (pattern instanceof FluidCraftingPatternDetails) {
-                return pushFluidPattern((FluidCraftingPatternDetails) pattern, table);
+            if (FluidCraftUtil.isFluidPattern(pattern)) {
+                return pushFluidPattern(pattern, table);
             }
             return false;
         }
@@ -134,34 +131,8 @@ public class EFabricatorMEChannel extends EFabricatorPart implements ICraftingPr
         return partController.offerWork(new EFabricatorWorker.CraftWork(remaining, output, size));
     }
 
-    protected boolean pushFluidPattern(final FluidCraftingPatternDetails pattern,final InventoryCrafting table) {
-        IAEItemStack[] outputs = pattern.getOutputs();
-        ItemStack output = outputs[0] != null ? outputs[0].getItemStack() : null;
-
-        if (output == null || output.stackSize <= 0) return false;
-
-        ItemStack[] remaining = new ItemStack[9];
-        int size = 0;
-        for (int i = 0; i < Math.min(table.getSizeInventory(), 9); ++i) {
-            ItemStack item = table.getStackInSlot(i);
-            if (item == null || item.stackSize <= 0){
-                remaining[i] = null;
-            } else {
-                if (size == 0) {
-                    size = item.stackSize;
-                    if (item.getItem() instanceof ItemFluidPacket) {
-                        int amount = ((FluidStack) FakeItemRegister.getStack(item)).amount;
-                        int pamount = ((FluidStack) FakeItemRegister.getStack(pattern.getInputs()[i].getItemStack())).amount;
-                        size = amount/pamount;
-                    }
-                }
-                remaining[i] = getContainerItem(item);
-            }
-        }
-
-        output.stackSize = output.stackSize * size;
-
-        return partController.offerWork(new EFabricatorWorker.CraftWork(remaining, output, size));
+    protected boolean pushFluidPattern(final ICraftingPatternDetails pattern, final InventoryCrafting table) {
+        return FluidCraftUtil.pushFluidPattern(pattern, table, partController);
     }
 
     private static ItemStack getContainerItem(ItemStack stackInSlot) {
@@ -199,84 +170,173 @@ public class EFabricatorMEChannel extends EFabricatorPart implements ICraftingPr
         if (partController != null) {
             return partController.isQueueFull();
         }
-        return true;
+        return false;
     }
 
-    // Misc
+    // IActionHost
 
-    @Nonnull
     @Override
     public IGridNode getActionableNode() {
         return proxy.getNode();
     }
 
-    @Nonnull
+    // IGridProxyable
+
+    @Override
+    public IGridNode getGridNode(ForgeDirection dir) {
+        return proxy.getNode();
+    }
+
     @Override
     public AENetworkProxy getProxy() {
         return proxy;
     }
 
-    @Nonnull
-    public DimensionalCoord getLocation() {
-        return new DimensionalCoord(this);
-    }
-
+    @Override
     public void gridChanged() {
     }
 
-    public IGridNode getGridNode(final ForgeDirection dir) {
-        return proxy.getNode();
-    }
-
-    @Nonnull
-    public AECableType getCableConnectionType(@Nonnull final AEPartLocation dir) {
-        return AECableType.SMART;
-    }
-
-    @Override
     public void securityBreak() {
-        getWorld().setBlockToAir(xCoord, yCoord, zCoord);
+    }
+
+    // NBT
+
+    @Override
+    public void readCustomNBT(NBTTagCompound tag) {
+        super.readCustomNBT(tag);
+        proxy.readFromNBT(tag);
     }
 
     @Override
-    public void readCustomNBT(final NBTTagCompound compound) {
-        super.readCustomNBT(compound);
-        proxy.readFromNBT(compound);
-    }
-
-    @Override
-    public void writeCustomNBT(final NBTTagCompound compound) {
-        super.writeCustomNBT(compound);
-        proxy.writeToNBT(compound);
-    }
-
-    @Override
-    public void onChunkUnload() {
-        super.onChunkUnload();
-        proxy.onChunkUnload();
-    }
-
-    @Override
-    public void invalidate() {
-        super.invalidate();
-        proxy.invalidate();
+    public void writeCustomNBT(NBTTagCompound tag) {
+        super.writeCustomNBT(tag);
+        proxy.writeToNBT(tag);
     }
 
     @Override
     public void onAssembled() {
         super.onAssembled();
-        proxy.setVisualRepresentation(getVisualItemStack());
         proxy.onReady();
-        if (partController != null) {
-            partController.recalculateEnergyUsage();
-        }
     }
 
     @Override
     public void onDisassembled() {
         super.onDisassembled();
-        proxy.setVisualRepresentation(getVisualItemStack());
         proxy.invalidate();
     }
 
+    @Override
+    public DimensionalCoord getLocation() {
+        return new DimensionalCoord(this);
+    }
+
+    // Helper class for FluidCraft integration via reflection
+    private static class FluidCraftUtil {
+        private static final String FLUID_PATTERN_CLASS = "com.glodblock.github.util.FluidCraftingPatternDetails";
+        private static final String ITEM_FLUID_PACKET_CLASS = "com.glodblock.github.common.item.ItemFluidPacket";
+        private static final String FAKE_ITEM_REGISTER_CLASS = "com.glodblock.github.common.item.fake.FakeItemRegister";
+
+        private static Boolean fluidCraftAvailable = null;
+
+        private static boolean isFluidCraftAvailable() {
+            if (fluidCraftAvailable == null) {
+                try {
+                    Class.forName(FLUID_PATTERN_CLASS);
+                    fluidCraftAvailable = true;
+                } catch (ClassNotFoundException e) {
+                    fluidCraftAvailable = false;
+                }
+            }
+            return fluidCraftAvailable;
+        }
+
+        static boolean isFluidPattern(ICraftingPatternDetails detail) {
+            if (!isFluidCraftAvailable()) return false;
+            try {
+                Class<?> fluidPatternCls = Class.forName(FLUID_PATTERN_CLASS);
+                return fluidPatternCls.isInstance(detail);
+            } catch (ClassNotFoundException e) {
+                return false;
+            }
+        }
+
+        static boolean pushFluidPattern(ICraftingPatternDetails pattern, InventoryCrafting table, EFabricatorController controller) {
+            if (!isFluidCraftAvailable()) return false;
+
+            try {
+                // Get outputs using reflection
+                Class<?> fluidPatternCls = Class.forName(FLUID_PATTERN_CLASS);
+                Method getOutputsMethod = fluidPatternCls.getMethod("getOutputs");
+                IAEItemStack[] outputs = (IAEItemStack[]) getOutputsMethod.invoke(pattern);
+                ItemStack output = outputs[0] != null ? outputs[0].getItemStack() : null;
+
+                if (output == null || output.stackSize <= 0) return false;
+
+                // Get inputs using reflection
+                Method getInputsMethod = fluidPatternCls.getMethod("getInputs");
+                Object[] inputs = (Object[]) getInputsMethod.invoke(pattern);
+
+                Class<?> itemFluidPacketCls = Class.forName(ITEM_FLUID_PACKET_CLASS);
+                Class<?> fakeItemRegisterCls = Class.forName(FAKE_ITEM_REGISTER_CLASS);
+                Method getStackMethod = fakeItemRegisterCls.getMethod("getStack", net.minecraft.item.ItemStack.class);
+
+                ItemStack[] remaining = new ItemStack[9];
+                int size = 0;
+                for (int i = 0; i < Math.min(table.getSizeInventory(), 9); ++i) {
+                    ItemStack item = table.getStackInSlot(i);
+                    if (item == null || item.stackSize <= 0) {
+                        remaining[i] = null;
+                    } else {
+                        if (size == 0) {
+                            size = item.stackSize;
+                            if (itemFluidPacketCls.isInstance(item)) {
+                                FluidStack fluidStack = (FluidStack) getStackMethod.invoke(null, item);
+                                FluidStack inputFluid = (FluidStack) getStackMethod.invoke(null, getInputItemStack(inputs[i]));
+                                if (fluidStack != null && inputFluid != null && inputFluid.amount > 0) {
+                                    size = fluidStack.amount / inputFluid.amount;
+                                }
+                            }
+                        }
+                        remaining[i] = getContainerItemStatic(item);
+                    }
+                }
+
+                output.stackSize = output.stackSize * size;
+
+                return controller.offerWork(new EFabricatorWorker.CraftWork(remaining, output, size));
+            } catch (Exception e) {
+                return false;
+            }
+        }
+
+        private static ItemStack getInputItemStack(Object input) {
+            try {
+                Method getItemStackMethod = input.getClass().getMethod("getItemStack");
+                return (ItemStack) getItemStackMethod.invoke(input);
+            } catch (Exception e) {
+                return null;
+            }
+        }
+
+        private static ItemStack getContainerItemStatic(ItemStack stackInSlot) {
+            if (stackInSlot == null) {
+                return null;
+            } else {
+                Item i = stackInSlot.getItem();
+                if (i != null && i.hasContainerItem(stackInSlot)) {
+                    ItemStack ci = i.getContainerItem(stackInSlot);
+                    if (ci != null && ci.stackSize > 0 && ci.isItemStackDamageable() && ci.getItemDamage() == ci.getMaxDamage()) {
+                        ci = null;
+                    }
+                    if (ci != null) {
+                        ci.stackSize = stackInSlot.stackSize;
+                    }
+                    return ci;
+                } else if (stackInSlot != null && stackInSlot.stackSize > 0) {
+                    stackInSlot.stackSize = 0;
+                    return stackInSlot;
+                } else return null;
+            }
+        }
+    }
 }

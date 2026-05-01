@@ -6,7 +6,7 @@ import appeng.api.networking.IGridNode;
 import appeng.api.networking.energy.IEnergyGrid;
 import appeng.api.networking.security.ISecurityGrid;
 import appeng.me.helpers.IGridProxyable;
-import appeng.tile.inventory.AppEngCellInventory;
+import appeng.tile.inventory.InventoryAdapter;
 import github.kasuminova.ecoaeextension.ECOAEExtension;
 import github.kasuminova.ecoaeextension.common.container.ContainerEStorageController;
 import github.kasuminova.ecoaeextension.common.estorage.EStorageCellHandler;
@@ -80,13 +80,14 @@ public class EStorageEventHandler {
 
         ItemStack stackInHand = player.getHeldItem();
 
-        AppEngCellInventory inv = drive.getDriveInv();
+        InventoryAdapter inv = drive.getDriveInv();
         ItemStack stackInSlot = inv.getStackInSlot(0);
         if (stackInSlot == null || stackInSlot.stackSize <= 0) {
             if (stackInHand == null || stackInHand.stackSize <= 0 || EStorageCellHandler.getHandler(stackInHand) == null) {
                 return;
             }
-            player.inventory.setInventorySlotContents(player.inventory.currentItem, inv.insertItem(0, stackInHand.copy(), false));
+            ItemStack remaining = inv.insertItem(0, stackInHand.copy(), false);
+            player.inventory.setInventorySlotContents(player.inventory.currentItem, remaining);
             player.addChatMessage(new ChatComponentText(StatCollector.translateToLocal("novaeng.estorage_cell_drive.player.inserted")));
             event.setCanceled(true);
             return;
@@ -96,7 +97,8 @@ public class EStorageEventHandler {
             return;
         }
 
-        player.inventory.setInventorySlotContents(player.inventory.currentItem, inv.extractItem(0, stackInSlot.stackSize, false));
+        ItemStack extracted = inv.extractItem(0, stackInSlot.stackSize, false);
+        player.inventory.setInventorySlotContents(player.inventory.currentItem, extracted);
         player.addChatMessage(new ChatComponentText(StatCollector.translateToLocal("novaeng.estorage_cell_drive.player.removed")));
         event.setCanceled(true);
     }

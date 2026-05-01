@@ -4,24 +4,22 @@ import appeng.api.implementations.ICraftingPatternItem;
 import appeng.api.networking.crafting.ICraftingPatternDetails;
 import appeng.api.networking.events.MENetworkCraftingPatternChange;
 import appeng.tile.inventory.AppEngInternalInventory;
-import appeng.util.inv.IAEAppEngInventory;
-import appeng.util.inv.InvOperation;
-import com.glodblock.github.util.FluidCraftingPatternDetails;
+import appeng.tile.inventory.IAEAppEngInventory;
+import appeng.tile.inventory.InvOperation;
+import appeng.tile.inventory.InventoryAdapter;
 import github.kasuminova.ecoaeextension.ECOAEExtension;
 import github.kasuminova.ecoaeextension.common.container.ContainerEFabricatorPatternSearch;
 import github.kasuminova.ecoaeextension.common.container.data.EFabricatorPatternData;
 import github.kasuminova.ecoaeextension.common.network.PktEFabricatorPatternSearchGUIUpdate;
-import github.kasuminova.mmce.common.util.PatternItemFilter;
 import it.unimi.dsi.fastutil.objects.ObjectArrayList;
 import net.minecraft.entity.player.EntityPlayerMP;
 import net.minecraft.item.Item;
+import net.minecraft.inventory.IInventory;
 import net.minecraft.item.ItemStack;
 import net.minecraft.nbt.NBTTagCompound;
 import net.minecraftforge.common.util.ForgeDirection;
 import cpw.mods.fml.common.FMLCommonHandler;
 import cpw.mods.fml.relauncher.Side;
-import net.minecraftforge.items.CapabilityItemHandler;
-import net.minecraftforge.items.IItemHandler;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
@@ -35,7 +33,7 @@ public class EFabricatorPatternBus extends EFabricatorPart implements IAEAppEngI
 
     public static final int PATTERN_SLOTS = 12 * 6;
 
-    protected final AppEngInternalInventory patterns = new AppEngInternalInventory(this, PATTERN_SLOTS, 1, PatternItemFilter.INSTANCE);
+    protected final InventoryAdapter patterns = new InventoryAdapter(new AppEngInternalInventory(this, PATTERN_SLOTS));
     protected final List<ICraftingPatternDetails> details = new ObjectArrayList<>(PATTERN_SLOTS);
 
     public EFabricatorPatternBus() {
@@ -65,12 +63,34 @@ public class EFabricatorPatternBus extends EFabricatorPart implements IAEAppEngI
         ICraftingPatternItem patternItem = (ICraftingPatternItem) item;
 
         ICraftingPatternDetails detail = patternItem.getPatternForItem(pattern, getWorld());
-        if (detail != null && (detail.isCraftable() || detail instanceof FluidCraftingPatternDetails)) {
+        // Accept item patterns or fluid patterns (if FluidCraft is available)
+        if (detail != null && (detail.isCraftable() || isFluidPattern(detail))) {
             details.set(slot, detail);
         }
     }
 
-    public AppEngInternalInventory getPatterns() {
+    private static final String FLUID_PATTERN_CLASS = "com.glodblock.github.util.FluidCraftingPatternDetails";
+    private static Boolean fluidPatternAvailable = null;
+
+    private static boolean isFluidPattern(ICraftingPatternDetails detail) {
+        if (fluidPatternAvailable == null) {
+            try {
+                Class.forName(FLUID_PATTERN_CLASS);
+                fluidPatternAvailable = true;
+            } catch (ClassNotFoundException e) {
+                fluidPatternAvailable = false;
+            }
+        }
+        if (!fluidPatternAvailable) return false;
+        try {
+            Class<?> fluidPatternCls = Class.forName(FLUID_PATTERN_CLASS);
+            return fluidPatternCls.isInstance(detail);
+        } catch (ClassNotFoundException e) {
+            return false;
+        }
+    }
+
+    public InventoryAdapter getPatterns() {
         return patterns;
     }
 
@@ -89,7 +109,7 @@ public class EFabricatorPatternBus extends EFabricatorPart implements IAEAppEngI
     }
 
     @Override
-    public void onChangeInventory(final IItemHandler inv, final int slot, final InvOperation mc, final ItemStack removedStack, final ItemStack newStack) {
+    public void onChangeInventory(final IInventory inv, final int slot, final InvOperation mc, final ItemStack removedStack, final ItemStack newStack) {
         refreshPattern(slot);
         notifyPatternChanged();
         sendPatternSearchGUIUpdateToClient(slot);
@@ -150,13 +170,13 @@ public class EFabricatorPatternBus extends EFabricatorPart implements IAEAppEngI
     @Override
     public void readCustomNBT(final NBTTagCompound compound) {
         super.readCustomNBT(compound);
-        patterns.readFromNBT(compound.getCompoundTag("patterns"));
+        ((AppEngInternalInventory) patterns.getInventory()).readFromNBT(compound.getCompoundTag("patterns"));
     }
 
     @Override
     public void writeCustomNBT(final NBTTagCompound compound) {
         super.writeCustomNBT(compound);
-        patterns.writeToNBT(compound, "patterns");
+        ((AppEngInternalInventory) patterns.getInventory()).writeToNBT(compound, "patterns");
     }
 
 }

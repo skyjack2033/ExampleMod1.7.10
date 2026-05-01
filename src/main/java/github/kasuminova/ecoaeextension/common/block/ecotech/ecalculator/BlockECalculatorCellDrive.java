@@ -1,7 +1,6 @@
 package github.kasuminova.ecoaeextension.common.block.ecotech.ecalculator;
 
-import appeng.tile.inventory.AppEngInternalInventory;
-import appeng.util.helpers.ItemHandlerUtil;
+import appeng.tile.inventory.InventoryAdapter;
 import github.kasuminova.ecoaeextension.ECOAEExtension;
 import github.kasuminova.ecoaeextension.common.item.ecalculator.ECalculatorCell;
 import github.kasuminova.ecoaeextension.common.tile.ecotech.ecalculator.ECalculatorCellDrive;
@@ -52,12 +51,12 @@ public class BlockECalculatorCellDrive extends BlockECalculatorPart {
         TileEntity te = worldIn.getTileEntity(x, y, z);
         if (te instanceof ECalculatorCellDrive) {
             ECalculatorCellDrive drive = (ECalculatorCellDrive) te;
-            AppEngInternalInventory inv = drive.getDriveInv();
+            InventoryAdapter inv = drive.getDriveInv();
             for (int i = 0; i < inv.getSlots(); i++) {
                 ItemStack stack = inv.getStackInSlot(i);
                 if (stack != null && stack.stackSize > 0) {
                     dropBlockAsItem(worldIn, x, y, z, stack);
-                    ItemHandlerUtil.setStackInSlot(inv, i, null);
+                    inv.setStackInSlot(i, null);
                 }
             }
         }
@@ -71,7 +70,7 @@ public class BlockECalculatorCellDrive extends BlockECalculatorPart {
         if (te instanceof ECalculatorCellDrive) {
             ECalculatorCellDrive drive = (ECalculatorCellDrive) te;
             boolean isOn = drive.getControllerLevel() != null;
-            AppEngInternalInventory driveInv = drive.getDriveInv();
+            InventoryAdapter driveInv = drive.getDriveInv();
             ItemStack stack = driveInv.getStackInSlot(0);
             boolean hasCell = stack != null && stack.stackSize > 0 && stack.getItem() instanceof ECalculatorCell;
 

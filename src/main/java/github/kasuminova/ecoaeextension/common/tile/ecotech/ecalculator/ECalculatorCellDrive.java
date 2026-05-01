@@ -1,19 +1,17 @@
 package github.kasuminova.ecoaeextension.common.tile.ecotech.ecalculator;
 
 import appeng.tile.inventory.AppEngInternalInventory;
-import appeng.util.helpers.ItemHandlerUtil;
-import appeng.util.inv.IAEAppEngInventory;
-import appeng.util.inv.InvOperation;
-import appeng.util.inv.filter.IAEItemFilter;
+import appeng.tile.inventory.IAEAppEngInventory;
+import appeng.tile.inventory.InvOperation;
+import appeng.tile.inventory.InventoryAdapter;
 import github.kasuminova.ecoaeextension.common.block.ecotech.ecalculator.prop.DriveStorageLevel;
 import github.kasuminova.ecoaeextension.common.block.ecotech.ecalculator.prop.Levels;
 import github.kasuminova.ecoaeextension.common.item.ecalculator.ECalculatorCell;
+import net.minecraft.inventory.IInventory;
 import net.minecraft.item.ItemStack;
 import net.minecraft.nbt.NBTTagCompound;
 import net.minecraftforge.common.util.ForgeDirection;
 import cpw.mods.fml.common.FMLCommonHandler;
-import net.minecraftforge.items.CapabilityItemHandler;
-import net.minecraftforge.items.IItemHandler;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
@@ -23,17 +21,17 @@ import static appeng.helpers.ItemStackHelper.stackWriteToNBT;
 
 public class ECalculatorCellDrive extends ECalculatorPart implements IAEAppEngInventory {
 
-    protected final AppEngInternalInventory driveInv = new AppEngInternalInventory(this, 1);
+    protected final InventoryAdapter driveInv = new InventoryAdapter(new AppEngInternalInventory(this, 1));
     protected ForgeDirection connectedSide = null;
 
     public int getInventoryStackLimit() { return 64; }
 
     public ECalculatorCellDrive() {
-        this.driveInv.setFilter(CellInvFilter.INSTANCE);
+        // setFilter not available in AE2 rv3-beta-690
     }
 
 
-    public void onChangeInventory(final IItemHandler inv, final int slot, final InvOperation mc, final ItemStack removedStack, final ItemStack newStack) {
+    public void onChangeInventory(final IInventory inv, final int slot, final InvOperation mc, final ItemStack removedStack, final ItemStack newStack) {
         disconnectTransmitter();
         final ECalculatorController controller = getController();
         if (controller != null) {
@@ -121,7 +119,7 @@ public class ECalculatorCellDrive extends ECalculatorPart implements IAEAppEngIn
         super.onAssembled();
     }
 
-    public AppEngInternalInventory getDriveInv() {
+    public InventoryAdapter getDriveInv() {
         return driveInv;
     }
 
@@ -137,7 +135,7 @@ public class ECalculatorCellDrive extends ECalculatorPart implements IAEAppEngIn
         final NBTTagCompound opt = tag.getCompoundTag("driveInv");
         for (int x = 0; x < driveInv.getSlots(); x++) {
             final NBTTagCompound item = opt.getCompoundTag("item" + x);
-            ItemHandlerUtil.setStackInSlot(driveInv, x, stackFromNBT(item));
+            driveInv.setStackInSlot(x, stackFromNBT(item));
         }
         if (tag.hasKey("connectedSide")) {
             this.connectedSide = ForgeDirection.VALID_DIRECTIONS[tag.getByte("connectedSide")];
@@ -187,22 +185,6 @@ public class ECalculatorCellDrive extends ECalculatorPart implements IAEAppEngIn
 
     public void markDirty() {
         markChunkDirty();
-    }
-
-    private static class CellInvFilter implements IAEItemFilter {
-
-        private static final CellInvFilter INSTANCE = new CellInvFilter();
-
-
-        public boolean allowExtract(IItemHandler inv, int slot, int amount) {
-            return true;
-        }
-
-
-        public boolean allowInsert(IItemHandler inv, int slot, ItemStack stack) {
-            return stack != null && stack.stackSize > 0 && stack.getItem() instanceof ECalculatorCell;
-        }
-
     }
 
 }

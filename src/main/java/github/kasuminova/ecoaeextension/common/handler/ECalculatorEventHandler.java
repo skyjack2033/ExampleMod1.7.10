@@ -6,7 +6,7 @@ import appeng.api.networking.IGridNode;
 import appeng.api.networking.energy.IEnergyGrid;
 import appeng.api.networking.security.ISecurityGrid;
 import appeng.me.helpers.IGridProxyable;
-import appeng.tile.inventory.AppEngInternalInventory;
+import appeng.tile.inventory.InventoryAdapter;
 import github.kasuminova.ecoaeextension.ECOAEExtension;
 import github.kasuminova.ecoaeextension.common.container.ContainerECalculatorController;
 import github.kasuminova.ecoaeextension.common.item.ecalculator.ECalculatorCell;
@@ -104,13 +104,14 @@ public class ECalculatorEventHandler {
 
         ItemStack stackInHand = player.getHeldItem();
 
-        AppEngInternalInventory inv = drive.getDriveInv();
+        InventoryAdapter inv = drive.getDriveInv();
         ItemStack stackInSlot = inv.getStackInSlot(0);
         if (stackInSlot == null || stackInSlot.stackSize <= 0) {
             if (stackInHand == null || stackInHand.stackSize <= 0 || !(stackInHand.getItem() instanceof ECalculatorCell)) {
                 return;
             }
-            player.inventory.setInventorySlotContents(player.inventory.currentItem, inv.insertItem(0, stackInHand.copy(), false));
+            ItemStack remaining = inv.insertItem(0, stackInHand.copy(), false);
+            player.inventory.setInventorySlotContents(player.inventory.currentItem, remaining);
             player.addChatMessage(new ChatComponentText(StatCollector.translateToLocal("novaeng.ecalculator_cell_drive.player.inserted")));
             event.setCanceled(true);
             return;
@@ -120,7 +121,8 @@ public class ECalculatorEventHandler {
             return;
         }
 
-        player.inventory.setInventorySlotContents(player.inventory.currentItem, inv.extractItem(0, stackInSlot.stackSize, false));
+        ItemStack extracted = inv.extractItem(0, stackInSlot.stackSize, false);
+        player.inventory.setInventorySlotContents(player.inventory.currentItem, extracted);
         player.addChatMessage(new ChatComponentText(StatCollector.translateToLocal("novaeng.ecalculator_cell_drive.player.removed")));
         event.setCanceled(true);
     }

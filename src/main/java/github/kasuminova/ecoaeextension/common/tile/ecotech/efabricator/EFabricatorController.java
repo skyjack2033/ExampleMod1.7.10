@@ -7,7 +7,7 @@ import appeng.api.storage.IMEMonitor;
 import appeng.api.storage.data.IAEItemStack;
 import appeng.api.storage.data.IItemList;
 import appeng.me.helpers.AENetworkProxy;
-import appeng.tile.inventory.AppEngInternalInventory;
+import appeng.tile.inventory.InventoryAdapter;
 import appeng.util.Platform;
 import appeng.util.item.AEItemStack;
 import appeng.util.item.ItemList;
@@ -354,11 +354,11 @@ public class EFabricatorController extends EPartController<EFabricatorPart> {
 
     public boolean insertPattern(final ItemStack patternStack) {
         for (final EFabricatorPatternBus patternBus : getPatternBuses()) {
-            AppEngInternalInventory patternInv = patternBus.getPatterns();
+            InventoryAdapter patternInv = patternBus.getPatterns();
             for (int i = 0; i < patternInv.getSlots(); i++) {
                 ItemStack slotStack = patternInv.getStackInSlot(i);
                 if (slotStack == null || slotStack.stackSize <= 0) {
-                    patternInv.setInventorySlotContents(i, ItemUtils.copyStackWithSize(patternStack, 1));
+                    patternInv.setStackInSlot(i, ItemUtils.copyStackWithSize(patternStack, 1));
                     return true;
                 }
             }

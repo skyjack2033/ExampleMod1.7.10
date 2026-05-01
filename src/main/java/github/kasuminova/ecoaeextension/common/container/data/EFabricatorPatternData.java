@@ -1,6 +1,6 @@
 package github.kasuminova.ecoaeextension.common.container.data;
 
-import appeng.tile.inventory.AppEngInternalInventory;
+import appeng.tile.inventory.InventoryAdapter;
 import com.github.bsideup.jabel.Desugar;
 import github.kasuminova.ecoaeextension.common.tile.ecotech.efabricator.EFabricatorController;
 import github.kasuminova.ecoaeextension.common.tile.ecotech.efabricator.EFabricatorPatternBus;
@@ -21,7 +21,7 @@ public record EFabricatorPatternData(Map<BlockPos, Set<PatternData>> patterns) {
     public static EFabricatorPatternData ofFull(final EFabricatorController efController) {
         final Map<BlockPos, Set<PatternData>> patterns = new BlockPos2ValueMap<>();
         for (final EFabricatorPatternBus patternBus : efController.getPatternBuses()) {
-            final AppEngInternalInventory patternInv = patternBus.getPatterns();
+            final InventoryAdapter patternInv = patternBus.getPatterns();
             final BlockPos pos = patternBus.getPos();
             for (int i = 0; i < patternInv.getSlots(); i++) {
                 final ItemStack patternStack = patternInv.getStackInSlot(i);

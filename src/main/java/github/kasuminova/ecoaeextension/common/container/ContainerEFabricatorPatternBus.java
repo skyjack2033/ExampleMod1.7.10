@@ -1,7 +1,7 @@
 package github.kasuminova.ecoaeextension.common.container;
 
 import appeng.container.slot.SlotRestrictedInput;
-import appeng.tile.inventory.AppEngInternalInventory;
+import appeng.tile.inventory.InventoryAdapter;
 import github.kasuminova.ecoaeextension.common.tile.ecotech.efabricator.EFabricatorPatternBus;
 import lombok.Getter;
 import net.minecraft.entity.player.EntityPlayer;
@@ -19,10 +19,10 @@ public class ContainerEFabricatorPatternBus extends Container {
     public ContainerEFabricatorPatternBus(final EFabricatorPatternBus owner, final EntityPlayer player) {
         this.owner = owner;
 
-        AppEngInternalInventory patterns = owner.getPatterns();
+        InventoryAdapter patterns = owner.getPatterns();
         for (int row = 0; row < ROWS; row++) {
             for (int col = 0; col < COLS; col++) {
-                this.addSlotToContainer(new SlotRestrictedInput(SlotRestrictedInput.PlacableItemType.ENCODED_PATTERN, patterns,
+                this.addSlotToContainer(new SlotRestrictedInput(SlotRestrictedInput.PlacableItemType.ENCODED_PATTERN, patterns.getInventory(),
                         (row * COLS) + col, 8 + (col * 18), 28 + (row * 18), player.inventory));
             }
         }

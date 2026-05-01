@@ -3,7 +3,7 @@ package github.kasuminova.ecoaeextension.common.container.data;
 import appeng.api.storage.ICellInventory;
 import appeng.api.storage.ICellInventoryHandler;
 import appeng.api.storage.data.IAEItemStack;
-import appeng.tile.inventory.AppEngCellInventory;
+import appeng.tile.inventory.InventoryAdapter;
 import com.github.bsideup.jabel.Desugar;
 import github.kasuminova.ecoaeextension.common.block.ecotech.estorage.prop.DriveStorageLevel;
 import github.kasuminova.ecoaeextension.common.block.ecotech.estorage.prop.DriveStorageType;
@@ -17,7 +17,7 @@ import net.minecraft.item.ItemStack;
 public record EStorageCellData(DriveStorageType type, DriveStorageLevel level, int usedTypes, long usedBytes) {
 
     public static EStorageCellData from(final EStorageCellDrive drive) {
-        AppEngCellInventory driveInv = drive.getDriveInv();
+        InventoryAdapter driveInv = drive.getDriveInv();
         ItemStack stack = driveInv.getStackInSlot(0);
         if (stack.stackSize <= 0) {
             return null;

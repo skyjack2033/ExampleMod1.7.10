@@ -8,8 +8,6 @@
   "client": [],
   "server": [],
   "mixins": [
-    "MixinCraftingCPUCluster",
-    "MixinTileChestFilter",
-    "MixinTileDriveFilter"
+    "MixinCraftingCPUCluster"
   ]
 }

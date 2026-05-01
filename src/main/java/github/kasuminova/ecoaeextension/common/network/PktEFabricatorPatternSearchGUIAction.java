@@ -1,6 +1,6 @@
 package github.kasuminova.ecoaeextension.common.network;
 
-import appeng.tile.inventory.AppEngInternalInventory;
+import appeng.tile.inventory.InventoryAdapter;
 import github.kasuminova.ecoaeextension.ECOAEExtension;
 import github.kasuminova.ecoaeextension.common.container.ContainerEFabricatorPatternSearch;
 import github.kasuminova.ecoaeextension.common.tile.ecotech.efabricator.EFabricatorController;
@@ -88,7 +88,7 @@ public class PktEFabricatorPatternSearchGUIAction implements IMessage, IMessageH
                 continue;
             }
 
-            final AppEngInternalInventory patterns = patternBus.getPatterns();
+            final InventoryAdapter patterns = patternBus.getPatterns();
             final int slot = message.slot;
             final ItemStack stackInSlot = patterns.getStackInSlot(slot);
 

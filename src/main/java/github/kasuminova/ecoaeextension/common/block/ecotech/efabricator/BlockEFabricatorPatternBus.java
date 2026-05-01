@@ -1,6 +1,6 @@
 package github.kasuminova.ecoaeextension.common.block.ecotech.efabricator;
 
-import appeng.tile.inventory.AppEngInternalInventory;
+import appeng.tile.inventory.InventoryAdapter;
 import github.kasuminova.ecoaeextension.ECOAEExtension;
 import github.kasuminova.ecoaeextension.common.CommonProxy;
 import github.kasuminova.ecoaeextension.common.tile.ecotech.efabricator.EFabricatorPatternBus;
@@ -67,12 +67,12 @@ public class BlockEFabricatorPatternBus extends BlockEFabricatorPart {
     public void breakBlock(World worldIn, int x, int y, int z, Block block, int meta) {
         TileEntity te = worldIn.getTileEntity(x, y, z);
         if (te instanceof EFabricatorPatternBus terminal) {
-            AppEngInternalInventory inv = terminal.getPatterns();
+            InventoryAdapter inv = terminal.getPatterns();
             for (int i = 0; i < inv.getSlots(); i++) {
                 ItemStack stack = inv.getStackInSlot(i);
                 if (stack != null && stack.stackSize > 0) {
                     dropBlockAsItem(worldIn, x, y, z, stack);
-                    inv.setInventorySlotContents(i, null);
+                    inv.setStackInSlot(i, null);
                 }
             }
         }
