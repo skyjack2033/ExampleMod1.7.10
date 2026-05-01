@@ -8,7 +8,6 @@
   "client": [],
   "server": [],
   "mixins": [
-    "AccessorCellRegistry",
     "MixinCraftingCPUCluster",
     "MixinTileChestFilter",
     "MixinTileDriveFilter"

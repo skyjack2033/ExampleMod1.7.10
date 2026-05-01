@@ -3,7 +3,6 @@ package github.kasuminova.ecoaeextension.common.block.ecotech.estorage;
 import github.kasuminova.ecoaeextension.ECOAEExtension;
 import github.kasuminova.ecoaeextension.common.block.prop.FacingProp;
 import github.kasuminova.ecoaeextension.common.util.EnumFacingCompat;
-import hellfirepvp.modularmachinery.common.block.BlockController;
 import net.minecraft.block.state.BlockStateContainer;
 import net.minecraft.block.state.IBlockState;
 import net.minecraft.entity.EntityLivingBase;
@@ -21,10 +20,11 @@ public class BlockEStorageTail extends BlockEStorage {
     public static final BlockEStorageTail L6 = new BlockEStorageTail("l6");
     public static final BlockEStorageTail L9 = new BlockEStorageTail("l9");
 
+    protected static final ForgeDirection FORMED = ForgeDirection.UNKNOWN; // Placeholder
+
     protected BlockEStorageTail(final String level) {
         this.setDefaultState(this.stateContainer.getBaseState()
                 .withProperty(FacingProp.HORIZONTALS, ForgeDirection.NORTH)
-                .withProperty(BlockController.FORMED, false)
         );
         this.setBlockName(ECOAEExtension.MOD_ID + '.' + "estorage_tail_" + level);
     }
@@ -51,7 +51,7 @@ public class BlockEStorageTail extends BlockEStorage {
     @Nonnull
     @Override
     protected BlockStateContainer createBlockState() {
-        return new BlockStateContainer(this, FacingProp.HORIZONTALS, BlockController.FORMED);
+        return new BlockStateContainer(this, FacingProp.HORIZONTALS);
     }
 
 }

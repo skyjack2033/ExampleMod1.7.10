@@ -18,10 +18,13 @@ public abstract class DynamicWidget {
     private boolean verticalCentering = false;
 
     public void render(RenderPos renderPos, WidgetGui widgetGui) {
+        render(widgetGui, new RenderSize(width, height), renderPos, new MousePos(widgetGui.mouseX, widgetGui.mouseY));
     }
 
     public void render(WidgetGui widgetGui, RenderSize renderSize, RenderPos renderPos, MousePos mousePos) {
-        render(renderPos, widgetGui);
+        preRenderInternal(widgetGui, renderSize, renderPos, mousePos);
+        renderInternal(widgetGui, renderSize, renderPos, mousePos);
+        postRenderInternal(widgetGui, renderSize, renderPos, mousePos);
     }
 
     public boolean onGuiEvent(GuiEvent event) {

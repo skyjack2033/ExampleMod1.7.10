@@ -1,31 +1,30 @@
 package github.kasuminova.ecoaeextension.common.tile.ecotech.efabricator;
 
-import appeng.api.AEApi;
 import appeng.api.config.Actionable;
 import appeng.api.config.PowerMultiplier;
 import appeng.api.networking.energy.IEnergyGrid;
 import appeng.api.storage.IMEMonitor;
 import appeng.api.storage.data.IAEItemStack;
 import appeng.api.storage.data.IItemList;
-import appeng.me.GridAccessException;
 import appeng.me.helpers.AENetworkProxy;
 import appeng.tile.inventory.AppEngInternalInventory;
 import appeng.util.Platform;
 import appeng.util.item.AEItemStack;
 import appeng.util.item.ItemList;
-import github.kasuminova.mmce.client.util.ItemStackUtils;
-import github.kasuminova.mmce.common.helper.IDynamicPatternInfo;
 import github.kasuminova.ecoaeextension.ECOAEExtension;
 import github.kasuminova.ecoaeextension.client.util.BlockModelHider;
 import github.kasuminova.ecoaeextension.common.block.ecotech.efabricator.BlockEFabricatorController;
+import github.kasuminova.ecoaeextension.common.block.ecotech.efabricator.BlockEFabricatorMEChannel;
+import github.kasuminova.ecoaeextension.common.block.ecotech.efabricator.BlockEFabricatorPatternBus;
+import github.kasuminova.ecoaeextension.common.block.ecotech.efabricator.BlockEFabricatorWorker;
 import github.kasuminova.ecoaeextension.common.block.ecotech.efabricator.prop.Levels;
 import github.kasuminova.ecoaeextension.common.network.PktEFabricatorGUIData;
 import github.kasuminova.ecoaeextension.common.tile.ecotech.EPartController;
+import github.kasuminova.ecoaeextension.common.tile.ecotech.NovaMultiBlockBase;
+import com.gtnewhorizon.structurelib.structure.IStructureDefinition;
 import github.kasuminova.ecoaeextension.common.tile.ecotech.efabricator.EFabricatorParallelProc.Modifier;
 import github.kasuminova.ecoaeextension.common.util.MachineCoolants;
-import hellfirepvp.modularmachinery.ModularMachinery;
-import hellfirepvp.modularmachinery.client.ClientProxy;
-import hellfirepvp.modularmachinery.common.machine.MachineRegistry;
+import github.kasuminova.mmce.client.util.ItemStackUtils;
 import hellfirepvp.modularmachinery.common.util.ItemUtils;
 import it.unimi.dsi.fastutil.objects.Object2ObjectAVLTreeMap;
 import net.minecraft.block.Block;
@@ -33,6 +32,7 @@ import net.minecraft.item.ItemStack;
 import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.nbt.NBTTagList;
 import net.minecraft.util.ResourceLocation;
+import net.minecraft.world.World;
 import github.kasuminova.ecoaeextension.common.util.BlockPos;
 import net.minecraftforge.common.util.Constants;
 import net.minecraftforge.fluids.FluidStack;
@@ -112,20 +112,15 @@ public class EFabricatorController extends EPartController<EFabricatorPart> {
 
     public EFabricatorController(final ResourceLocation machineRegistryName) {
         this();
-        this.parentMachine = MachineRegistry.getRegistry().getMachine(machineRegistryName);
-        if (parentMachine != null && parentMachine.getStructureDef() != null) {
-            this.setStructureDef(parentMachine.getStructureDef());
-        }
-        this.parentController = BlockEFabricatorController.REGISTRY.get(new ResourceLocation(ECOAEExtension.MOD_ID, machineRegistryName.getResourcePath()));
+        this.parentController = BlockEFabricatorController.REGISTRY.get(
+                new ResourceLocation(ECOAEExtension.MOD_ID, machineRegistryName.getResourcePath()));
     }
 
     public EFabricatorController() {
-        this.workMode = WorkMode.SEMI_SYNC;
     }
 
     protected boolean onSyncTick() {
         if (channel == null || !channel.getProxy().isActive()) {
-            this.tickExecutor = null;
             return false;
         }
 
@@ -252,7 +247,7 @@ public class EFabricatorController extends EPartController<EFabricatorPart> {
     @Override
     protected void updateComponents() {
         super.updateComponents();
-        IDynamicPatternInfo workers = getDynamicPattern("workers");
+        NovaMultiBlockBase.DynamicPatternInfo workers = getDynamicPattern("workers");
         this.length = workers != null ? workers.getSize() : 0;
         registerCoolantHandlers();
         updateParallelism();
@@ -261,7 +256,7 @@ public class EFabricatorController extends EPartController<EFabricatorPart> {
 
     @SuppressWarnings("unchecked")
     private void registerCoolantHandlers() {
-        for (final Object val : this.foundComponents.values()) {
+        for (final Object val : getFoundComponents(Object.class)) {
             try {
                 java.lang.reflect.Method providedMethod = val.getClass().getMethod("providedComponent");
                 Object provided = providedMethod.invoke(val);
@@ -586,10 +581,8 @@ public class EFabricatorController extends EPartController<EFabricatorPart> {
             return;
         }
 
-        ClientProxy.clientScheduler.addRunnable(() -> {
-            BlockModelHider.hideOrShowBlocks(HIDE_POS_LIST, this);
-            notifyStructureFormedState(isStructureFormed());
-        }, 0);
+        BlockModelHider.hideOrShowBlocks(HIDE_POS_LIST, this);
+        notifyStructureFormedState(isStructureFormed());
     }
 
     @Override
@@ -606,10 +599,8 @@ public class EFabricatorController extends EPartController<EFabricatorPart> {
         if (!FMLCommonHandler.instance().getEffectiveSide().isClient()) {
             return;
         }
-        ClientProxy.clientScheduler.addRunnable(() -> {
-            BlockModelHider.hideOrShowBlocks(HIDE_POS_LIST, this);
-            notifyStructureFormedState(isStructureFormed());
-        }, 0);
+        BlockModelHider.hideOrShowBlocks(HIDE_POS_LIST, this);
+        notifyStructureFormedState(isStructureFormed());
     }
 
     @Override
@@ -634,10 +625,8 @@ public class EFabricatorController extends EPartController<EFabricatorPart> {
         loaded = prevLoaded;
 
         if (FMLCommonHandler.instance().getEffectiveSide().isClient()) {
-            ClientProxy.clientScheduler.addRunnable(() -> {
-                BlockModelHider.hideOrShowBlocks(HIDE_POS_LIST, this);
-                notifyStructureFormedState(isStructureFormed());
-            }, 0);
+            BlockModelHider.hideOrShowBlocks(HIDE_POS_LIST, this);
+            notifyStructureFormedState(isStructureFormed());
         }
     }
 
@@ -664,14 +653,118 @@ public class EFabricatorController extends EPartController<EFabricatorPart> {
     @Override
     protected void readMachineNBT(final NBTTagCompound compound) {
         super.readMachineNBT(compound);
-        if (compound.hasKey("parentMachine")) {
-            ResourceLocation rl = new ResourceLocation(compound.getString("parentMachine"));
-            parentMachine = MachineRegistry.getRegistry().getMachine(rl);
-            if (parentMachine != null) {
-                this.parentController = BlockEFabricatorController.REGISTRY.get(new ResourceLocation(ECOAEExtension.MOD_ID, parentMachine.getMachineName()));
-            } else {
-                ModularMachinery.log.info("Couldn't find machine named " + rl + " for controller at " + getPos());
+        if (compound.hasKey("machineRegistryName")) {
+            String machineName = compound.getString("machineRegistryName");
+            this.parentController = BlockEFabricatorController.REGISTRY.get(
+                    new ResourceLocation(ECOAEExtension.MOD_ID, machineName));
+        }
+    }
+
+    @Override
+    protected void writeMachineNBT(final NBTTagCompound compound) {
+        super.writeMachineNBT(compound);
+        if (parentController != null) {
+            compound.setString("machineRegistryName", parentController.getMachineName());
+        }
+    }
+
+    @Override
+    protected String getShapeName() {
+        if (parentController == BlockEFabricatorController.L4) {
+            return "l4";
+        }
+        if (parentController == BlockEFabricatorController.L6) {
+            return "l6";
+        }
+        if (parentController == BlockEFabricatorController.L9) {
+            return "l9";
+        }
+        ECOAEExtension.log.warn("Invalid EFabricator controller level: {}", parentController);
+        return "l4";
+    }
+
+    @Override
+    protected IStructureDefinition<? extends NovaMultiBlockBase> getStructureDefinition() {
+        return null; // TODO: Implement with StructureLib
+    }
+
+    @Override
+    protected Block getControllerBlockInstance() {
+        return BlockEFabricatorController.L4;
+    }
+
+    @Override
+    protected boolean validateBasicStructure() {
+        BlockPos pos = getPos();
+        if (worldObj == null) return false;
+
+        Block controllerBlock = getControllerBlockInstance();
+        if (controllerBlock == null) return false;
+
+        // Check controller block is present
+        if (worldObj.getBlock(pos.getX(), pos.getY(), pos.getZ()) != controllerBlock) {
+            return false;
+        }
+
+        // Validate structure by scanning for required components
+        return validateEFabricatorStructure();
+    }
+
+    /**
+     * Validate EFabricator structure by checking for required components.
+     * The structure requires:
+     * - ME Channel at (0, 0, 1) relative to controller
+     * - Pattern Bus at (1, 0, 0) relative to controller
+     * - At least one Worker block extending from the controller
+     */
+    private boolean validateEFabricatorStructure() {
+        BlockPos pos = getPos();
+        World world = worldObj;
+
+        // Check for ME Channel - must be present for structure to form
+        // Looking at position (0, 0, 1) relative to controller
+        Block meChannelBlock = world.getBlock(pos.getX(), pos.getY(), pos.getZ() + 1);
+        if (!(meChannelBlock instanceof BlockEFabricatorMEChannel)) {
+            // ME Channel is required - structure cannot form without it
+            return false;
+        }
+
+        // Check for Pattern Bus - must be present
+        // Looking at position (1, 0, 0) relative to controller
+        Block patternBusBlock = world.getBlock(pos.getX() + 1, pos.getY(), pos.getZ());
+        if (!(patternBusBlock instanceof BlockEFabricatorPatternBus)) {
+            // Pattern Bus is required - structure cannot form without it
+            return false;
+        }
+
+        // Scan for at least one Worker block extending from the controller
+        // Workers extend in the +Z direction (NORTH from controller's perspective)
+        boolean hasWorker = false;
+        for (int z = 1; z <= getMaxWorkerLength(); z++) {
+            Block workerBlock = world.getBlock(pos.getX(), pos.getY(), pos.getZ() + z);
+            if (workerBlock instanceof BlockEFabricatorWorker) {
+                hasWorker = true;
+                break;
             }
+        }
+
+        // At least one worker is required
+        if (!hasWorker) {
+            return false;
+        }
+
+        return true;
+    }
+
+    /**
+     * Get the maximum worker length based on machine tier.
+     */
+    private int getMaxWorkerLength() {
+        Levels level = getLevel();
+        switch (level) {
+            case L6: return 8;
+            case L9: return 16;
+            default: return 4;
         }
     }
 

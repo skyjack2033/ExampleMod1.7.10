@@ -1,29 +1,35 @@
 package github.kasuminova.ecoaeextension.common.tile.ecotech;
 
-import github.kasuminova.mmce.common.world.MMWorldEventListener;
-import github.kasuminova.mmce.common.world.MachineComponentManager;
 import github.kasuminova.ecoaeextension.ECOAEExtension;
-import github.kasuminova.ecoaeextension.common.block.prop.FacingProp;
-import github.kasuminova.ecoaeextension.common.tile.TileCustomController;
-import github.kasuminova.ecoaeextension.common.util.EPartMap;
-import hellfirepvp.modularmachinery.ModularMachinery;
-import net.minecraft.block.Block;
-import net.minecraft.block.state.IBlockState;
-import net.minecraft.tileentity.TileEntity;
-import net.minecraftforge.common.util.ForgeDirection;
 import github.kasuminova.ecoaeextension.common.util.BlockPos;
-import net.minecraft.util.math.Vec3i;
+import github.kasuminova.ecoaeextension.common.util.NovaAsyncExecutor;
+import net.minecraft.block.Block;
+import net.minecraft.tileentity.TileEntity;
 import net.minecraft.world.World;
-import cpw.mods.fml.common.FMLCommonHandler;
+import net.minecraftforge.common.util.ForgeDirection;
 
-public abstract class EPartController<P extends EPart<?>> extends TileCustomController {
+/**
+ * Controller base for ECO subsystems.
+ * Extends NovaPartController for structure validation and part management.
+ */
+public abstract class EPartController<P extends EPart<?>> extends NovaPartController<P> {
 
-    protected final EPartMap<P> parts = new EPartMap<>();
-    protected boolean assembled = false;
-    protected int ticksExisted = 0;
+    /**
+     * Called on every server tick when structure is formed.
+     * @return true to trigger async tick processing
+     */
+    protected abstract boolean onSyncTick();
 
-    
+    /**
+     * Called asynchronously after onSyncTick returns true.
+     */
+    protected void onAsyncTick() {
+    }
+
+    @Override
     public void doControllerTick() {
+        checkRotation();
+
         boolean structureValid = this.doStructureCheck();
         if (structureValid) {
             this.setStructureFormed(true);
@@ -40,109 +46,78 @@ public abstract class EPartController<P extends EPart<?>> extends TileCustomCont
         }
 
         if (onSyncTick()) {
-            this.tickExecutor = ModularMachinery.EXECUTE_MANAGER.addTask(this::onAsyncTick, timeRecorder.usedTimeAvg());
+            NovaAsyncExecutor.getInstance().submitTask(this::onAsyncTick);
         }
     }
 
     public boolean checkControllerShared() {
         BlockPos pos = getPos();
         World world = getWorld();
-        if (world.getTileEntity(pos.up(2).getX(), pos.up(2).getY(), pos.up(2).getZ()) instanceof EPartController<?> partController) {
+        TileEntity up = world.getTileEntity(pos.getX(), pos.getY() + 2, pos.getZ());
+        if (up instanceof EPartController<?> partController) {
             if (partController.getControllerBlock() == getControllerBlock()) {
                 return true;
             }
         }
-        if (world.getTileEntity(pos.down(2).getX(), pos.down(2).getY(), pos.down(2).getZ()) instanceof EPartController<?> partController) {
+        TileEntity down = world.getTileEntity(pos.getX(), pos.getY() - 2, pos.getZ());
+        if (down instanceof EPartController<?> partController) {
             return partController.getControllerBlock() == getControllerBlock();
         }
         return false;
     }
 
-    protected abstract boolean onSyncTick();
-
-    protected void onAsyncTick() {
-    }
-
-    
+    @Override
     protected void updateComponents() {
-        super.updateComponents();
         clearParts();
-        this.foundPattern.getTileBlocksArray().forEach((pos, info) -> {
-            BlockPos realPos = getPos().add(pos);
-            if (!this.getWorld().blockExists(realPos.getX(), realPos.getY(), realPos.getZ())) {
-                return;
+        clearFoundComponents();
+
+        BlockPos pos = getPos();
+        World world = getWorld();
+
+        int maxLen = getWorkerLength();
+        if (maxLen <= 0) maxLen = 12;
+
+        int dx = 0, dz = 0;
+        ForgeDirection dir = controllerRotation;
+        if (dir == ForgeDirection.NORTH) dz = -maxLen;
+        else if (dir == ForgeDirection.SOUTH) dz = maxLen;
+        else if (dir == ForgeDirection.WEST) dx = -maxLen;
+        else if (dir == ForgeDirection.EAST) dx = maxLen;
+
+        int startX = Math.min(pos.getX(), pos.getX() + dx);
+        int endX = Math.max(pos.getX(), pos.getX() + dx);
+        int startZ = Math.min(pos.getZ(), pos.getZ() + dz);
+        int endZ = Math.max(pos.getZ(), pos.getZ() + dz);
+        int startY = pos.getY() - 1;
+        int endY = pos.getY() + 1;
+
+        for (int x = startX; x <= endX; x++) {
+            for (int y = startY; y <= endY; y++) {
+                for (int z = startZ; z <= endZ; z++) {
+                    if (!world.blockExists(x, y, z)) continue;
+                    TileEntity te = world.getTileEntity(x, y, z);
+                    if (te instanceof AbstractEPart<?>) {
+                        try {
+                            @SuppressWarnings("unchecked")
+                            P part = (P) te;
+                            if (part.getController() != this) {
+                                ((EPart) part).setController(this);
+                            }
+                            parts.addPart(part);
+                            onAddPart(part);
+                        } catch (ClassCastException e) {
+                            ECOAEExtension.log.error("Invalid EPart found at ({}, {}, {}) !", x, y, z);
+                            ECOAEExtension.log.error(e);
+                        }
+                    }
+                }
             }
-            TileEntity te = this.getWorld().getTileEntity(realPos.getX(), realPos.getY(), realPos.getZ());
-            if (!(te instanceof AbstractEPart<?>)) {
-                return;
-            }
-            try {
-                P part = (P) te;
-                ((EPart) part).setController(this);
-                parts.addPart(part);
-                onAddPart(part);
-            } catch (ClassCastException e) {
-                ECOAEExtension.log.error("Invalid EPart found at {} !", realPos);
-                ECOAEExtension.log.error(e);
-            }
-        });
+        }
     }
 
     protected abstract void onAddPart(P part);
 
-    
-    protected boolean canCheckStructure() {
-        if (lastStructureCheckTick == -1 || (isStructureFormed() && !assembled)) {
-            return true;
-        }
-        if (ticksExisted % 40 == 0) {
-            return true;
-        }
-        if (isStructureFormed()) {
-            BlockPos pos = getPos();
-            Vec3i min = foundPattern.getMin();
-            Vec3i max = foundPattern.getMax();
-            BlockPos minPos = new BlockPos(pos.getX() + min.getX(), pos.getY() + min.getY(), pos.getZ() + min.getZ());
-            BlockPos maxPos = new BlockPos(pos.getX() + max.getX(), pos.getY() + max.getY(), pos.getZ() + max.getZ());
-            return MMWorldEventListener.INSTANCE.isAreaChanged(getWorld(), minPos, maxPos);
-        }
-        return ticksExisted % Math.min(structureCheckDelay + this.structureCheckCounter * 5, maxStructureCheckDelay) == 0;
-    }
-
-    protected boolean assemble() {
-        if (assembled) {
-            return true;
-        }
-        if (checkControllerShared()) {
-            disassemble();
-            return false;
-        }
-        assembled = true;
-        parts.assemble(this);
-        return true;
-    }
-
-    protected void disassemble() {
-        if (!assembled) {
-            return;
-        }
-        assembled = false;
-        parts.disassemble();
-    }
-
-    protected void clearParts() {
-        parts.clear();
-    }
-
-    public EPartMap<P> getParts() {
-        return parts;
-    }
-
-    public boolean isAssembled() {
-        return assembled;
-    }
-
-    
+    @Override
     protected void checkRotation() {
         if (controllerRotation != null) {
             return;
@@ -151,47 +126,26 @@ public abstract class EPartController<P extends EPart<?>> extends TileCustomCont
         Block block = getWorld().getBlock(p.getX(), p.getY(), p.getZ());
         if (getControllerBlock().isInstance(block)) {
             int meta = getWorld().getBlockMetadata(p.getX(), p.getY(), p.getZ());
-            controllerRotation = ForgeDirection.getOrientation(meta);
+            if (meta >= 0 && meta < ForgeDirection.VALID_DIRECTIONS.length) {
+                controllerRotation = ForgeDirection.VALID_DIRECTIONS[meta];
+            } else {
+                controllerRotation = ForgeDirection.NORTH;
+            }
         } else {
-            ECOAEExtension.log.warn("Invalid EPartController block at {} !", getPos());
+            ECOAEExtension.log.warn("Invalid controller block at {} !", getPos());
             controllerRotation = ForgeDirection.NORTH;
         }
     }
 
     protected abstract Class<? extends Block> getControllerBlock();
 
-    
-    public void validate() {
-        tileEntityInvalid = false;
-        loaded = true;
-    }
-
-    
+    @Override
     public void invalidate() {
-        tileEntityInvalid = true;
-        loaded = false;
-        disassemble();
+        super.invalidate();
     }
 
-    
-    public void onLoad() {
-        loaded = true;
-    }
-
-    
-    public void onChunkUnload() {
-        super.onChunkUnload();
-        disassemble();
-    }
-
-    
+    @Override
     public boolean isWorking() {
         return assembled;
     }
-
-    
-    public void updateContainingBlockInfo() {
-        super.updateContainingBlockInfo();
-    }
-
 }

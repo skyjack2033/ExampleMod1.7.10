@@ -6,7 +6,6 @@ import github.kasuminova.ecoaeextension.common.container.ContainerEFabricatorCon
 import github.kasuminova.ecoaeextension.common.container.ContainerEFabricatorPatternSearch;
 import github.kasuminova.ecoaeextension.common.container.data.EFabricatorPatternData;
 import github.kasuminova.ecoaeextension.common.tile.ecotech.efabricator.EFabricatorController;
-import hellfirepvp.modularmachinery.ModularMachinery;
 import io.netty.buffer.ByteBuf;
 import net.minecraft.entity.player.EntityPlayerMP;
 import github.kasuminova.ecoaeextension.common.util.BlockPos;
@@ -40,45 +39,47 @@ public class PktEFabricatorGUIAction implements IMessage, IMessageHandler<PktEFa
         final EntityPlayerMP player = ctx.getServerHandler().playerEntity;
         final Action action = message.action;
 
-        ModularMachinery.EXECUTE_MANAGER.addSyncTask(() -> {
-            if (action == Action.SWITCH_GUI) {
-                if (player.openContainer instanceof ContainerEFabricatorController efGUI) {
-                    final EFabricatorController owner = efGUI.getOwner();
-                    final BlockPos pos = owner.getPos();
-                    player.openGui(ECOAEExtension.MOD_ID, CommonProxy.GuiType.EFABRICATOR_PATTERN_SEARCH.ordinal(), owner.getWorld(), pos.getX(), pos.getY(), pos.getZ());
-                    if (player.openContainer instanceof ContainerEFabricatorPatternSearch efPatternSearch) {
-                        ECOAEExtension.NET_CHANNEL.sendTo(
-                                new PktEFabricatorPatternSearchGUIUpdate(
-                                        PktEFabricatorPatternSearchGUIUpdate.UpdateType.FULL,
-                                        EFabricatorPatternData.ofFull(efPatternSearch.getOwner())
-                                ),
-                                player
-                        );
-                    }
-                    return;
+        if (action == Action.SWITCH_GUI) {
+            if (player.openContainer instanceof ContainerEFabricatorController) {
+                ContainerEFabricatorController efGUI = (ContainerEFabricatorController) player.openContainer;
+                final EFabricatorController owner = efGUI.getController();
+                final BlockPos pos = owner.getPos();
+                player.openGui(ECOAEExtension.MOD_ID, CommonProxy.GuiType.EFABRICATOR_PATTERN_SEARCH.ordinal(), owner.getWorld(), pos.getX(), pos.getY(), pos.getZ());
+                if (player.openContainer instanceof ContainerEFabricatorPatternSearch) {
+                    ContainerEFabricatorPatternSearch efPatternSearch = (ContainerEFabricatorPatternSearch) player.openContainer;
+                    ECOAEExtension.NET_CHANNEL.sendTo(
+                            new PktEFabricatorPatternSearchGUIUpdate(
+                                    PktEFabricatorPatternSearchGUIUpdate.UpdateType.FULL,
+                                    EFabricatorPatternData.ofFull(efPatternSearch.getController())
+                            ),
+                            player
+                    );
                 }
-
-                if (player.openContainer instanceof ContainerEFabricatorPatternSearch efPatternSearch) {
-                    EFabricatorController owner = efPatternSearch.getOwner();
-                    BlockPos pos = owner.getPos();
-                    player.openGui(ECOAEExtension.MOD_ID, CommonProxy.GuiType.EFABRICATOR_CONTROLLER.ordinal(), owner.getWorld(), pos.getX(), pos.getY(), pos.getZ());
-                    return;
-                }
-                return;
+                return null;
             }
 
-            if (!(player.openContainer instanceof ContainerEFabricatorController efGUI)) {
-                return;
+            if (player.openContainer instanceof ContainerEFabricatorPatternSearch) {
+                ContainerEFabricatorPatternSearch efPatternSearch = (ContainerEFabricatorPatternSearch) player.openContainer;
+                EFabricatorController owner = efPatternSearch.getController();
+                BlockPos pos = owner.getPos();
+                player.openGui(ECOAEExtension.MOD_ID, CommonProxy.GuiType.EFABRICATOR_CONTROLLER.ordinal(), owner.getWorld(), pos.getX(), pos.getY(), pos.getZ());
+                return null;
             }
+            return null;
+        }
 
-            EFabricatorController owner = efGUI.getOwner();
-            switch (action) {
-                case ENABLE_OVERCLOCKING: owner.setOverclocked(true); break;
-                case DISABLE_OVERCLOCKING: owner.setOverclocked(false); break;
-                case ENABLE_ACTIVE_COOLANT: owner.setActiveCooling(true); break;
-                case DISABLE_ACTIVE_COOLANT: owner.setActiveCooling(false); break;
-            }
-        });
+        if (!(player.openContainer instanceof ContainerEFabricatorController)) {
+            return null;
+        }
+
+        ContainerEFabricatorController efGUI = (ContainerEFabricatorController) player.openContainer;
+        EFabricatorController owner = efGUI.getController();
+        switch (action) {
+            case ENABLE_OVERCLOCKING: owner.setOverclocked(true); break;
+            case DISABLE_OVERCLOCKING: owner.setOverclocked(false); break;
+            case ENABLE_ACTIVE_COOLANT: owner.setActiveCooling(true); break;
+            case DISABLE_ACTIVE_COOLANT: owner.setActiveCooling(false); break;
+        }
         return null;
     }
 

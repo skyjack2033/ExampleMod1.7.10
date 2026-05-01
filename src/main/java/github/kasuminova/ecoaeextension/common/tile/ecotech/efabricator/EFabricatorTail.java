@@ -34,13 +34,11 @@ public class EFabricatorTail extends EFabricatorPart {
     @Override
     public void readCustomNBT(final NBTTagCompound compound) {
         formed = compound.getBoolean("formed");
-        super.readCustomNBT(compound);
     }
 
     @Override
     public void writeCustomNBT(final NBTTagCompound compound) {
         compound.setBoolean("formed", formed);
-        super.writeCustomNBT(compound);
     }
 
 }

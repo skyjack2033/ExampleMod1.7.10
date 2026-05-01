@@ -1,17 +1,26 @@
 package github.kasuminova.ecoaeextension.common.container;
 
 import github.kasuminova.ecoaeextension.common.tile.ecotech.efabricator.EFabricatorController;
-import hellfirepvp.modularmachinery.common.container.ContainerBase;
+import lombok.Getter;
 import net.minecraft.entity.player.EntityPlayer;
+import net.minecraft.inventory.Container;
 import net.minecraft.inventory.Slot;
 
-public class ContainerEFabricatorPatternSearch extends ContainerBase<EFabricatorController> {
+@Getter
+public class ContainerEFabricatorPatternSearch extends Container {
 
-    public ContainerEFabricatorPatternSearch(final EFabricatorController owner, final EntityPlayer opening) {
-        super(owner, opening);
+    protected final EFabricatorController controller;
+
+    public ContainerEFabricatorPatternSearch(final EFabricatorController controller, final EntityPlayer player) {
+        this.controller = controller;
+        addPlayerSlots(player);
     }
 
     @Override
+    public boolean canInteractWith(final EntityPlayer player) {
+        return controller != null && !controller.isInvalid();
+    }
+
     protected void addPlayerSlots(EntityPlayer opening) {
         for (int i = 0; i < 3; i++) {
             for (int j = 0; j < 9; j++) {
@@ -21,6 +30,11 @@ public class ContainerEFabricatorPatternSearch extends ContainerBase<EFabricator
         for (int i = 0; i < 9; i++) {
             addSlotToContainer(new Slot(opening.inventory, i, 18 + i * 18, 177 + 11));
         }
+    }
+
+    // Backward compatibility
+    public EFabricatorController getOwner() {
+        return controller;
     }
 
 }

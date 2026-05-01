@@ -20,7 +20,6 @@ import appeng.me.helpers.AENetworkProxy;
 import appeng.me.helpers.IGridProxyable;
 import appeng.me.helpers.MachineSource;
 import github.kasuminova.ecoaeextension.common.block.ecotech.estorage.BlockEStorageMEChannel;
-import hellfirepvp.modularmachinery.ModularMachinery;
 import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
 import net.minecraft.nbt.NBTTagCompound;
@@ -218,17 +217,15 @@ public class EStorageMEChannel extends EStoragePart implements ICellContainer, I
     public void onAssembled() {
         super.onAssembled();
         proxy.setVisualRepresentation(getVisualItemStack());
-        ModularMachinery.EXECUTE_MANAGER.addSyncTask(() -> {
-            proxy.onReady();
-            partController.recalculateEnergyUsage();
-            List<EStorageCellDrive> cellDrives = partController.getCellDrives();
-            if (cellDrives != null && cellDrives.size() > 0) {
-                try {
-                    proxy.getGrid().postEvent(new MENetworkCellArrayUpdate());
-                } catch (Exception ignored) {
-                }
+        proxy.onReady();
+        partController.recalculateEnergyUsage();
+        List<EStorageCellDrive> cellDrives = partController.getCellDrives();
+        if (cellDrives != null && cellDrives.size() > 0) {
+            try {
+                proxy.getGrid().postEvent(new MENetworkCellArrayUpdate());
+            } catch (Exception ignored) {
             }
-        });
+        }
     }
 
     @Override

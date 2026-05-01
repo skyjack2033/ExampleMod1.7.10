@@ -52,14 +52,41 @@ public abstract class NovaMultiBlockBase extends NovaTileBase {
 
     public boolean doStructureCheck() {
         IStructureDefinition<NovaMultiBlockBase> def = getStructureDef();
-        if (worldObj == null || def == null) return false;
+        if (worldObj == null) return false;
 
-        BlockPos controllerPos = getPos();
-        ExtendedFacing facing = ExtendedFacing.of(controllerRotation);
+        if (def != null) {
+            BlockPos controllerPos = getPos();
+            ExtendedFacing facing = ExtendedFacing.of(controllerRotation);
 
-        return def.check((NovaMultiBlockBase) this, getShapeName(), worldObj, facing,
-                controllerPos.getX(), controllerPos.getY(), controllerPos.getZ(),
-                0, 0, 0, false);
+            return def.check((NovaMultiBlockBase) this, getShapeName(), worldObj, facing,
+                    controllerPos.getX(), controllerPos.getY(), controllerPos.getZ(),
+                    0, 0, 0, false);
+        }
+
+        // Fallback: simple structure validation when StructureLib definition is not available
+        return validateBasicStructure();
+    }
+
+    /**
+     * Validate basic structure requirements when StructureLib definition is not available.
+     * Subclasses can override to provide specific validation logic.
+     * Default implementation checks that the controller block is present.
+     */
+    protected boolean validateBasicStructure() {
+        BlockPos pos = getPos();
+        Block controllerBlock = getControllerBlockInstance();
+        if (controllerBlock == null) return false;
+
+        // Check controller block is present at current position
+        return worldObj.getBlock(pos.getX(), pos.getY(), pos.getZ()) == controllerBlock;
+    }
+
+    /**
+     * Returns the controller block instance for validation.
+     * Subclasses should override to return their specific controller block instance.
+     */
+    protected Block getControllerBlockInstance() {
+        return null;
     }
 
     @SuppressWarnings("unchecked")

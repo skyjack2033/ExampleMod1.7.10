@@ -16,11 +16,18 @@ public interface ECPUCluster {
 
     void novaeng_ec$setAvailableStorage(final long availableStorage);
 
+    long novaeng_ec$getAvailableStorage();
+
     void novaeng_ec$setAccelerators(final int accelerators);
+
+    int novaeng_ec$getAccelerators();
 
     ECalculatorThreadCore novaeng_ec$getController();
 
     void novaeng_ec$setThreadCore(final ECalculatorThreadCore threadCore);
+
+    @Nullable
+    ECalculatorController novaeng_ec$getVirtualCPUOwner();
 
     void novaeng_ec$setVirtualCPUOwner(@Nullable final ECalculatorController isVirtualCPUOwner);
 

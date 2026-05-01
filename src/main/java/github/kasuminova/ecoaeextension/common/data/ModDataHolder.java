@@ -1,7 +1,6 @@
 package github.kasuminova.ecoaeextension.common.data;
 
 import github.kasuminova.ecoaeextension.ECOAEExtension;
-import hellfirepvp.modularmachinery.ModularMachinery;
 import cpw.mods.fml.common.Loader;
 import cpw.mods.fml.common.ModContainer;
 import org.apache.commons.io.IOUtils;
@@ -21,7 +20,7 @@ public class ModDataHolder {
     private boolean requiresDefaultMachinery;
 
     public void setup(File configDir) {
-        File mainDir = new File(configDir, ModularMachinery.MODID);
+        File mainDir = new File(configDir, ECOAEExtension.MOD_ID);
         if (!mainDir.exists()) {
             mainDir.mkdirs();
         }
@@ -36,7 +35,6 @@ public class ModDataHolder {
             requiresDefaultMachinery = true;
             ecomachineryDir.mkdirs();
         }
-
     }
 
     public boolean requiresDefaultMachinery() {

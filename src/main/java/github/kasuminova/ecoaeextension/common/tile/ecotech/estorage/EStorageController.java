@@ -7,7 +7,9 @@ import appeng.api.storage.data.IAEItemStack;
 import com.gtnewhorizon.structurelib.structure.IStructureDefinition;
 import github.kasuminova.ecoaeextension.ECOAEExtension;
 import github.kasuminova.ecoaeextension.client.util.BlockModelHider;
+import github.kasuminova.ecoaeextension.common.block.ecotech.estorage.BlockEStorageCellDrive;
 import github.kasuminova.ecoaeextension.common.block.ecotech.estorage.BlockEStorageController;
+import github.kasuminova.ecoaeextension.common.block.ecotech.estorage.BlockEStorageMEChannel;
 import github.kasuminova.ecoaeextension.common.estorage.ECellDriveWatcher;
 import github.kasuminova.ecoaeextension.common.tile.ecotech.NovaMultiBlockBase;
 import github.kasuminova.ecoaeextension.common.tile.ecotech.NovaPartController;
@@ -15,6 +17,7 @@ import github.kasuminova.ecoaeextension.common.tile.ecotech.estorage.bus.EStorag
 import net.minecraft.block.Block;
 import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.util.ResourceLocation;
+import net.minecraft.world.World;
 import github.kasuminova.ecoaeextension.common.util.BlockPos;
 import cpw.mods.fml.common.FMLCommonHandler;
 import cpw.mods.fml.relauncher.Side;
@@ -63,6 +66,79 @@ public class EStorageController extends NovaPartController<EStoragePart> {
     protected IStructureDefinition<? extends NovaMultiBlockBase> getStructureDefinition() {
         // TODO: Define StructureLib shapes for EStorage L4/L6/L9
         return null;
+    }
+
+    @Override
+    protected Block getControllerBlockInstance() {
+        return BlockEStorageController.L4;
+    }
+
+    @Override
+    protected boolean validateBasicStructure() {
+        BlockPos pos = getPos();
+        if (worldObj == null) return false;
+
+        Block controllerBlock = getControllerBlockInstance();
+        if (controllerBlock == null) return false;
+
+        // Check controller block is present
+        if (worldObj.getBlock(pos.getX(), pos.getY(), pos.getZ()) != controllerBlock) {
+            return false;
+        }
+
+        // Validate structure by scanning for required components
+        return validateEStorageStructure();
+    }
+
+    /**
+     * Validate EStorage structure by checking for required components.
+     * The structure requires:
+     * - ME Channel at (0, 0, 1) relative to controller
+     * - At least one Cell Drive adjacent to the structure
+     */
+    private boolean validateEStorageStructure() {
+        BlockPos pos = getPos();
+        World world = worldObj;
+
+        // Check for ME Channel - must be present for structure to form
+        // Looking at position (0, 0, 1) relative to controller
+        Block meChannelBlock = world.getBlock(pos.getX(), pos.getY(), pos.getZ() + 1);
+        if (!(meChannelBlock instanceof BlockEStorageMEChannel)) {
+            // ME Channel is required - structure cannot form without it
+            return false;
+        }
+
+        // Scan for at least one Cell Drive adjacent to the structure
+        // Cell drives can be placed in various positions around the machine
+        boolean hasCellDrive = false;
+
+        // Check positions around the controller
+        int[][] checkPositions = {
+            {0, 0, -1},   // Back
+            {1, 0, 0},    // Right
+            {-1, 0, 0},   // Left
+            {0, 1, 0},    // Above
+            {0, -1, 0},   // Below
+            {1, 0, 1},    // Front-right
+            {-1, 0, 1},   // Front-left
+            {1, 0, -1},   // Back-right
+            {-1, 0, -1},  // Back-left
+        };
+
+        for (int[] offset : checkPositions) {
+            Block block = world.getBlock(pos.getX() + offset[0], pos.getY() + offset[1], pos.getZ() + offset[2]);
+            if (block instanceof BlockEStorageCellDrive) {
+                hasCellDrive = true;
+                break;
+            }
+        }
+
+        // At least one cell drive is required
+        if (!hasCellDrive) {
+            return false;
+        }
+
+        return true;
     }
 
     @Override

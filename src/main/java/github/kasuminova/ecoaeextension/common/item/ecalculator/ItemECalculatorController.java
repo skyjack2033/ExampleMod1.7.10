@@ -1,9 +1,9 @@
 package github.kasuminova.ecoaeextension.common.item.ecalculator;
 
-import hellfirepvp.modularmachinery.common.item.ItemBlockController;
 import net.minecraft.block.Block;
 import net.minecraft.client.resources.I18n;
 import net.minecraft.entity.player.EntityPlayer;
+import net.minecraft.item.ItemBlock;
 import net.minecraft.item.ItemStack;
 import net.minecraft.util.StatCollector;
 import org.jetbrains.annotations.NotNull;
@@ -12,10 +12,11 @@ import org.jetbrains.annotations.Nullable;
 import javax.annotation.Nonnull;
 import java.util.List;
 
-public class ItemECalculatorController extends ItemBlockController {
+public class ItemECalculatorController extends ItemBlock {
 
     public ItemECalculatorController(final Block block) {
         super(block);
+        setHasSubtypes(true);
     }
 
     @Override
@@ -29,7 +30,6 @@ public class ItemECalculatorController extends ItemBlockController {
         tooltip.add(I18n.format("novaeng.extendable_calculate_subsystem.info.6"));
         tooltip.add(I18n.format("novaeng.extendable_calculate_subsystem.info.7"));
         tooltip.add(I18n.format("novaeng.extendable_calculate_subsystem.info.8"));
-        super.addInformation(stack, player, tooltip, advanced);
     }
 
     @Nonnull
@@ -38,4 +38,8 @@ public class ItemECalculatorController extends ItemBlockController {
         return StatCollector.translateToLocal(this.getUnlocalizedNameInefficiently(stack) + ".name").trim();
     }
 
+    @Override
+    public int getMetadata(final int damage) {
+        return damage;
+    }
 }

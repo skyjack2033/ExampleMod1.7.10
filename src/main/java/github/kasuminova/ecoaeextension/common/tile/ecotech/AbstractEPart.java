@@ -1,19 +1,14 @@
 package github.kasuminova.ecoaeextension.common.tile.ecotech;
 
-import hellfirepvp.modularmachinery.common.tiles.base.TileEntitySynchronized;
-import net.minecraft.block.state.IBlockState;
-import net.minecraft.nbt.NBTTagCompound;
 import github.kasuminova.ecoaeextension.common.util.BlockPos;
+import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.world.World;
-import cpw.mods.fml.common.FMLCommonHandler;
 
-import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 
-public abstract class AbstractEPart<C> extends TileEntitySynchronized implements EPart<C> {
+public abstract class AbstractEPart<C> extends NovaTileBase implements EPart<C> {
 
     protected C partController = null;
-    protected boolean loaded = false;
 
     @Override
     public void setController(final C controller) {
@@ -35,19 +30,16 @@ public abstract class AbstractEPart<C> extends TileEntitySynchronized implements
     @Override
     public void onLoad() {
         super.onLoad();
-        this.loaded = true;
     }
 
     @Override
     public void onChunkUnload() {
-        loaded = false;
         super.onChunkUnload();
         callDisassemble(partController);
     }
 
     @Override
     public void invalidate() {
-        loaded = false;
         super.invalidate();
         callDisassemble(partController);
     }
@@ -62,7 +54,17 @@ public abstract class AbstractEPart<C> extends TileEntitySynchronized implements
 
     @Override
     public void readCustomNBT(final NBTTagCompound compound) {
-        super.readCustomNBT(compound);
+    }
+
+    @Override
+    public void readFromNBT(final NBTTagCompound compound) {
+        super.readFromNBT(compound);
+        readCustomNBT(compound);
+    }
+
+    @Override
+    public void writeToNBT(final NBTTagCompound compound) {
+        super.writeToNBT(compound);
     }
 
     /**
@@ -73,8 +75,8 @@ public abstract class AbstractEPart<C> extends TileEntitySynchronized implements
     public void updateContainingBlockInfo() {
         super.updateContainingBlockInfo();
         final World world = getWorld();
-        if (FMLCommonHandler.instance().getEffectiveSide().isClient() && worldObj != null) {
-            worldObj.markBlockForUpdate(xCoord, yCoord, zCoord);
+        if (world != null && world.isRemote) {
+            world.markBlockForUpdate(xCoord, yCoord, zCoord);
         }
     }
 

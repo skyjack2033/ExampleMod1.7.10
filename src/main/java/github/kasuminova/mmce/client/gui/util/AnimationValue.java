@@ -13,7 +13,22 @@ public class AnimationValue {
     }
 
     public void update() {
-        // Stub
+        if (isFinished()) {
+            return;
+        }
+        // Linear interpolation toward target
+        float diff = target - value;
+        if (duration > 0) {
+            float step = diff / duration;
+            if (Math.abs(step) < 0.001F) {
+                value = target;
+            } else {
+                value += step;
+            }
+        } else {
+            // No duration set, snap to target
+            value = target;
+        }
     }
 
     public boolean isFinished() {

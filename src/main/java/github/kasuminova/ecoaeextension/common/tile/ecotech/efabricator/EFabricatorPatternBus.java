@@ -3,17 +3,15 @@ package github.kasuminova.ecoaeextension.common.tile.ecotech.efabricator;
 import appeng.api.implementations.ICraftingPatternItem;
 import appeng.api.networking.crafting.ICraftingPatternDetails;
 import appeng.api.networking.events.MENetworkCraftingPatternChange;
-import appeng.me.GridAccessException;
 import appeng.tile.inventory.AppEngInternalInventory;
 import appeng.util.inv.IAEAppEngInventory;
 import appeng.util.inv.InvOperation;
 import com.glodblock.github.util.FluidCraftingPatternDetails;
-import github.kasuminova.mmce.common.util.PatternItemFilter;
 import github.kasuminova.ecoaeextension.ECOAEExtension;
 import github.kasuminova.ecoaeextension.common.container.ContainerEFabricatorPatternSearch;
 import github.kasuminova.ecoaeextension.common.container.data.EFabricatorPatternData;
 import github.kasuminova.ecoaeextension.common.network.PktEFabricatorPatternSearchGUIUpdate;
-import hellfirepvp.modularmachinery.ModularMachinery;
+import github.kasuminova.mmce.common.util.PatternItemFilter;
 import it.unimi.dsi.fastutil.objects.ObjectArrayList;
 import net.minecraft.entity.player.EntityPlayerMP;
 import net.minecraft.item.Item;
@@ -21,6 +19,7 @@ import net.minecraft.item.ItemStack;
 import net.minecraft.nbt.NBTTagCompound;
 import net.minecraftforge.common.util.ForgeDirection;
 import cpw.mods.fml.common.FMLCommonHandler;
+import cpw.mods.fml.relauncher.Side;
 import net.minecraftforge.items.CapabilityItemHandler;
 import net.minecraftforge.items.IItemHandler;
 
@@ -143,7 +142,7 @@ public class EFabricatorPatternBus extends EFabricatorPart implements IAEAppEngI
     public void validate() {
         super.validate();
         if (FMLCommonHandler.instance().getEffectiveSide().isServer()) {
-            ModularMachinery.EXECUTE_MANAGER.addSyncTask(this::refreshPatterns);
+            refreshPatterns();
         }
     }
 

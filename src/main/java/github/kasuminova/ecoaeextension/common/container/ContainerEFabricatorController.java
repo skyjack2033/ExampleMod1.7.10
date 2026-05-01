@@ -1,23 +1,29 @@
 package github.kasuminova.ecoaeextension.common.container;
 
 import github.kasuminova.ecoaeextension.common.tile.ecotech.efabricator.EFabricatorController;
-import hellfirepvp.modularmachinery.common.container.ContainerBase;
 import lombok.Getter;
 import lombok.Setter;
 import net.minecraft.entity.player.EntityPlayer;
+import net.minecraft.inventory.Container;
 import net.minecraft.inventory.Slot;
 
-@Setter
 @Getter
-public class ContainerEFabricatorController extends ContainerBase<EFabricatorController> {
+@Setter
+public class ContainerEFabricatorController extends Container {
 
+    protected final EFabricatorController controller;
     protected int tickExisted = 0;
 
-    public ContainerEFabricatorController(final EFabricatorController owner, final EntityPlayer opening) {
-        super(owner, opening);
+    public ContainerEFabricatorController(final EFabricatorController controller, final EntityPlayer player) {
+        this.controller = controller;
+        addPlayerSlots(player);
     }
 
-    
+    @Override
+    public boolean canInteractWith(final EntityPlayer player) {
+        return controller != null && !controller.isInvalid();
+    }
+
     protected void addPlayerSlots(EntityPlayer opening) {
         for (int i = 0; i < 3; i++) {
             for (int j = 0; j < 9; j++) {
@@ -27,6 +33,11 @@ public class ContainerEFabricatorController extends ContainerBase<EFabricatorCon
         for (int i = 0; i < 9; i++) {
             addSlotToContainer(new Slot(opening.inventory, i, 18 + i * 18, 177));
         }
+    }
+
+    // Backward compatibility
+    public EFabricatorController getOwner() {
+        return controller;
     }
 
 }

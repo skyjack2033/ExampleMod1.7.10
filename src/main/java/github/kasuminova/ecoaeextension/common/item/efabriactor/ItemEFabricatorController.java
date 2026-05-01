@@ -1,9 +1,9 @@
 package github.kasuminova.ecoaeextension.common.item.efabriactor;
 
-import hellfirepvp.modularmachinery.common.item.ItemBlockController;
 import net.minecraft.block.Block;
 import net.minecraft.client.resources.I18n;
 import net.minecraft.entity.player.EntityPlayer;
+import net.minecraft.item.ItemBlock;
 import net.minecraft.item.ItemStack;
 import net.minecraft.util.StatCollector;
 import org.jetbrains.annotations.NotNull;
@@ -12,17 +12,17 @@ import org.jetbrains.annotations.Nullable;
 import javax.annotation.Nonnull;
 import java.util.List;
 
-public class ItemEFabricatorController extends ItemBlockController {
+public class ItemEFabricatorController extends ItemBlock {
 
     public ItemEFabricatorController(final Block block) {
         super(block);
+        setHasSubtypes(true);
     }
 
     @Override
     public void addInformation(final @NotNull ItemStack stack, @Nullable final EntityPlayer player, final List<String> tooltip, final boolean advanced) {
         tooltip.add(I18n.format("novaeng.extendable_fabricator_subsystem.info.0"));
         tooltip.add(I18n.format("novaeng.extendable_fabricator_subsystem.info.1"));
-        super.addInformation(stack, player, tooltip, advanced);
     }
 
     @Nonnull
@@ -31,4 +31,8 @@ public class ItemEFabricatorController extends ItemBlockController {
         return StatCollector.translateToLocal(this.getUnlocalizedNameInefficiently(stack) + ".name").trim();
     }
 
+    @Override
+    public int getMetadata(final int damage) {
+        return damage;
+    }
 }

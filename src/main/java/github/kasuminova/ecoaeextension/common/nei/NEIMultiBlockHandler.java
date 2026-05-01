@@ -2,9 +2,9 @@ package github.kasuminova.ecoaeextension.common.nei;
 
 import codechicken.nei.PositionedStack;
 import codechicken.nei.recipe.TemplateRecipeHandler;
-import github.kasuminova.mmce.common.util.StructureDefinition;
-import hellfirepvp.modularmachinery.common.machine.DynamicMachine;
-import hellfirepvp.modularmachinery.common.machine.MachineRegistry;
+import github.kasuminova.ecoaeextension.common.block.ecotech.ecalculator.BlockECalculatorController;
+import github.kasuminova.ecoaeextension.common.block.ecotech.estorage.BlockEStorageController;
+import github.kasuminova.ecoaeextension.common.block.ecotech.efabricator.BlockEFabricatorController;
 import net.minecraft.block.Block;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.FontRenderer;
@@ -31,82 +31,91 @@ public class NEIMultiBlockHandler extends TemplateRecipeHandler {
 
     @Override
     public String getGuiTexture() {
-        return "textures/gui/container/crafting_table.png";
+        return "ecoaeextension:textures/gui/nei/structure_preview.png";
     }
 
     @Override
     public void loadCraftingRecipes(String outputId, Object... results) {
-        if (outputId.equals("item") && results.length > 0 && results[0] instanceof ItemStack) {
-            loadCraftingRecipes((ItemStack) results[0]);
+        // Load all controller blocks as recipes
+        if ("item".equals(outputId)) {
+            return;
         }
+        // Add recipes for all machine controllers
+        addControllerRecipes();
     }
 
     @Override
     public void loadCraftingRecipes(ItemStack result) {
-        Block block = Block.getBlockFromItem(result.getItem());
-        if (block == null) return;
-        String blockName = Block.blockRegistry.getNameForObject(block);
-        if (blockName == null) return;
-
-        // Only match controller blocks whose registry name matches a machine definition
-        for (DynamicMachine machine : MachineRegistry.getRegistry().getLoadedMachines()) {
-            StructureDefinition def = machine.getStructureDef();
-            if (def == null) continue;
-            // Match by checking if the block name contains the machine registry name
-            if (blockName.contains(def.registryName) || def.registryName.contains(
-                    blockName.substring(blockName.lastIndexOf(':') + 1))) {
-                arecipes.add(new CachedMultiBlockRecipe(def, result));
-                return; // One structure per controller
-            }
-        }
+        addControllerRecipes();
     }
 
     @Override
     public void loadUsageRecipes(ItemStack ingredient) {
-        Block block = Block.getBlockFromItem(ingredient.getItem());
-        if (block == null) return;
+        addControllerRecipes();
+    }
 
-        for (DynamicMachine machine : MachineRegistry.getRegistry().getLoadedMachines()) {
-            StructureDefinition def = machine.getStructureDef();
-            if (def == null) continue;
+    private void addControllerRecipes() {
+        // ECalculator controllers
+        if (BlockECalculatorController.L4 != null) {
+            arecipes.add(new CachedMultiBlockRecipe(new ItemStack(BlockECalculatorController.L4), MachineType.ECALCULATOR, 4));
+        }
+        if (BlockECalculatorController.L6 != null) {
+            arecipes.add(new CachedMultiBlockRecipe(new ItemStack(BlockECalculatorController.L6), MachineType.ECALCULATOR, 6));
+        }
+        if (BlockECalculatorController.L9 != null) {
+            arecipes.add(new CachedMultiBlockRecipe(new ItemStack(BlockECalculatorController.L9), MachineType.ECALCULATOR, 9));
+        }
 
-            boolean found = false;
-            for (StructureDefinition.PatternEntry entry : def.fixedParts) {
-                if (entry.matches(block, ingredient.getItemDamage())) { found = true; break; }
-            }
-            if (!found) {
-                for (StructureDefinition.DynamicPattern dp : def.dynamicPatterns) {
-                    for (StructureDefinition.PatternEntry entry : dp.parts) {
-                        if (entry.matches(block, ingredient.getItemDamage())) { found = true; break; }
-                    }
-                    if (found) break;
-                }
-            }
+        // EStorage controllers
+        if (BlockEStorageController.L4 != null) {
+            arecipes.add(new CachedMultiBlockRecipe(new ItemStack(BlockEStorageController.L4), MachineType.ESTORAGE, 4));
+        }
+        if (BlockEStorageController.L6 != null) {
+            arecipes.add(new CachedMultiBlockRecipe(new ItemStack(BlockEStorageController.L6), MachineType.ESTORAGE, 6));
+        }
+        if (BlockEStorageController.L9 != null) {
+            arecipes.add(new CachedMultiBlockRecipe(new ItemStack(BlockEStorageController.L9), MachineType.ESTORAGE, 9));
+        }
 
-            if (found) {
-                arecipes.add(new CachedMultiBlockRecipe(def, ingredient));
-            }
+        // EFabricator controllers
+        if (BlockEFabricatorController.L4 != null) {
+            arecipes.add(new CachedMultiBlockRecipe(new ItemStack(BlockEFabricatorController.L4), MachineType.EFABRICATOR, 4));
+        }
+        if (BlockEFabricatorController.L6 != null) {
+            arecipes.add(new CachedMultiBlockRecipe(new ItemStack(BlockEFabricatorController.L6), MachineType.EFABRICATOR, 6));
+        }
+        if (BlockEFabricatorController.L9 != null) {
+            arecipes.add(new CachedMultiBlockRecipe(new ItemStack(BlockEFabricatorController.L9), MachineType.EFABRICATOR, 9));
         }
     }
 
     @Override
     public void drawExtras(int recipe) {
-        if (recipe < 0 || recipe >= arecipes.size()) return;
-        CachedMultiBlockRecipe cached = (CachedMultiBlockRecipe) arecipes.get(recipe);
-        FontRenderer fr = Minecraft.getMinecraft().fontRenderer;
-        fr.drawString(cached.def.registryName, 6, 8, 0xFF404040);
-        fr.drawString("Parts: " + cached.def.fixedParts.size(), 6, 20, 0xFF808080);
+        if (recipe >= 0 && recipe < arecipes.size()) {
+            CachedMultiBlockRecipe cachedRecipe = (CachedMultiBlockRecipe) arecipes.get(recipe);
+            if (cachedRecipe != null) {
+                cachedRecipe.drawStructure();
+            }
+        }
+    }
+
+    public enum MachineType {
+        ECALCULATOR,
+        ESTORAGE,
+        EFABRICATOR
     }
 
     public class CachedMultiBlockRecipe extends CachedRecipe {
 
-        final StructureDefinition def;
         final ItemStack controllerStack;
+        final MachineType machineType;
+        final int tier;
 
-        public CachedMultiBlockRecipe(StructureDefinition def, ItemStack controller) {
-            this.def = def;
+        public CachedMultiBlockRecipe(ItemStack controller, MachineType type, int tier) {
             this.controllerStack = controller.copy();
             this.controllerStack.stackSize = 1;
+            this.machineType = type;
+            this.tier = tier;
         }
 
         @Override
@@ -116,47 +125,108 @@ public class NEIMultiBlockHandler extends TemplateRecipeHandler {
 
         @Override
         public List<PositionedStack> getIngredients() {
-            List<PositionedStack> ingredients = new ArrayList<>();
-            int x = 20, y = 40, col = 0;
-
-            for (StructureDefinition.PatternEntry entry : def.fixedParts) {
-                for (String element : entry.elements) {
-                    ItemStack stack = parseElement(element);
-                    if (stack != null) {
-                        ingredients.add(new PositionedStack(stack, x + col * 18, y));
-                        col++;
-                        if (col >= 5) { col = 0; y += 18; }
-                    }
-                }
-            }
-
-            for (StructureDefinition.DynamicPattern dp : def.dynamicPatterns) {
-                for (StructureDefinition.PatternEntry entry : dp.parts) {
-                    for (String element : entry.elements) {
-                        ItemStack stack = parseElement(element);
-                        if (stack != null) {
-                            ingredients.add(new PositionedStack(stack, x + col * 18, y));
-                            col++;
-                            if (col >= 5) { col = 0; y += 18; }
-                        }
-                    }
-                }
-            }
-
-            return ingredients;
+            return new ArrayList<>();
         }
 
-        private ItemStack parseElement(String element) {
-            try {
-                String[] parts = element.split("@");
-                String blockName = parts[0];
-                int meta = parts.length > 1 ? Integer.parseInt(parts[1]) : 0;
-                Block block = Block.getBlockFromName(blockName);
-                if (block != null) {
-                    return new ItemStack(block, 1, meta);
-                }
-            } catch (Exception ignored) {}
-            return null;
+        public void drawStructure() {
+            FontRenderer fr = Minecraft.getMinecraft().fontRenderer;
+            int baseX = 6;
+            int baseY = 24;
+
+            // Draw title
+            String title = getMachineName();
+            fr.drawString(title, baseX, baseY - 12, 0xFF404040);
+
+            // Draw tier info
+            fr.drawString("Tier L" + tier, baseX, baseY + getStructureHeight() + 4, 0xFF808080);
+
+            // Draw structure blocks
+            drawStructureBlocks(baseX, baseY);
+        }
+
+        private String getMachineName() {
+            switch (machineType) {
+                case ECALCULATOR:
+                    return "ECPU Calculator";
+                case ESTORAGE:
+                    return "Extended Digital Storage";
+                case EFABRICATOR:
+                    return "Molecular Assembler";
+                default:
+                    return "Unknown Machine";
+            }
+        }
+
+        private int getStructureHeight() {
+            return 20 + tier * 3;
+        }
+
+        private void drawStructureBlocks(int baseX, int baseY) {
+            switch (machineType) {
+                case ECALCULATOR:
+                    drawECalculatorStructure(baseX, baseY);
+                    break;
+                case ESTORAGE:
+                    drawEStorageStructure(baseX, baseY);
+                    break;
+                case EFABRICATOR:
+                    drawEFabricatorStructure(baseX, baseY);
+                    break;
+            }
+        }
+
+        private void drawECalculatorStructure(int baseX, int baseY) {
+            // Draw controller
+            drawBlockPlaceholder(baseX + 40, baseY, 0xFFFF00); // Yellow for controller
+
+            // Draw channel
+            drawBlockPlaceholder(baseX + 40, baseY + 12, 0xFF00FF); // Magenta for ME Channel
+
+            // Draw threads based on tier
+            int threadCount = tier;
+            for (int i = 0; i < threadCount; i++) {
+                drawBlockPlaceholder(baseX + 40 + (i % 2) * 12, baseY + 24 + (i / 2) * 12, 0xFF00FF00); // Green for threads
+            }
+
+            // Draw tail
+            drawBlockPlaceholder(baseX + 40 + tier, baseY + 24, 0xFF808080); // Gray for tail
+        }
+
+        private void drawEStorageStructure(int baseX, int baseY) {
+            // Draw controller
+            drawBlockPlaceholder(baseX + 40, baseY, 0xFFFF00); // Yellow for controller
+
+            // Draw channel
+            drawBlockPlaceholder(baseX + 40, baseY + 12, 0xFF00FF); // Magenta for ME Channel
+
+            // Draw storage cells
+            int cellCount = tier * 2;
+            for (int i = 0; i < cellCount; i++) {
+                drawBlockPlaceholder(baseX + 40 + (i % 2) * 12, baseY + 24 + (i / 2) * 12, 0xFF0000FF); // Blue for cells
+            }
+        }
+
+        private void drawEFabricatorStructure(int baseX, int baseY) {
+            // Draw controller
+            drawBlockPlaceholder(baseX + 40, baseY, 0xFFFF00); // Yellow for controller
+
+            // Draw channel
+            drawBlockPlaceholder(baseX + 40, baseY + 12, 0xFF00FF); // Magenta for ME Channel
+
+            // Draw pattern bus
+            drawBlockPlaceholder(baseX + 28, baseY + 24, 0xFF00FFFF); // Cyan for pattern bus
+
+            // Draw workers based on tier
+            int workerCount = tier;
+            for (int i = 0; i < workerCount; i++) {
+                drawBlockPlaceholder(baseX + 40 + i * 12, baseY + 24, 0xFFFF00FF); // Purple for workers
+            }
+        }
+
+        private void drawBlockPlaceholder(int x, int y, int color) {
+            // Simple colored rectangle to represent a block
+            // In a full implementation, this would draw the actual block texture
+            Minecraft.getMinecraft().fontRenderer.drawString("■", x, y, color);
         }
     }
 }

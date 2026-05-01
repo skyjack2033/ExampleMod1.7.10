@@ -18,7 +18,6 @@ import appeng.me.helpers.AENetworkProxy;
 import appeng.me.helpers.IGridProxyable;
 import appeng.me.helpers.MachineSource;
 import github.kasuminova.ecoaeextension.common.block.ecotech.ecalculator.BlockECalculatorMEChannel;
-import hellfirepvp.modularmachinery.ModularMachinery;
 import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
 import net.minecraft.nbt.NBTTagCompound;
@@ -167,7 +166,7 @@ public class ECalculatorMEChannel extends ECalculatorPart implements IActionHost
     public void onAssembled() {
         super.onAssembled();
         proxy.setVisualRepresentation(getVisualItemStack());
-        ModularMachinery.EXECUTE_MANAGER.addSyncTask(proxy::onReady);
+        proxy.onReady();
     }
 
     

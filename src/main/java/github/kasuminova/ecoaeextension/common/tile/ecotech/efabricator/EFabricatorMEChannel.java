@@ -25,9 +25,7 @@ import appeng.util.Platform;
 import com.glodblock.github.common.item.ItemFluidPacket;
 import com.glodblock.github.common.item.fake.FakeItemRegister;
 import com.glodblock.github.util.FluidCraftingPatternDetails;
-import github.kasuminova.mmce.common.util.PatternItemFilter;
 import github.kasuminova.ecoaeextension.common.block.ecotech.efabricator.BlockEFabricatorMEChannel;
-import hellfirepvp.modularmachinery.ModularMachinery;
 import net.minecraft.inventory.InventoryCrafting;
 import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
@@ -268,10 +266,10 @@ public class EFabricatorMEChannel extends EFabricatorPart implements ICraftingPr
     public void onAssembled() {
         super.onAssembled();
         proxy.setVisualRepresentation(getVisualItemStack());
-        ModularMachinery.EXECUTE_MANAGER.addSyncTask(() -> {
-            proxy.onReady();
+        proxy.onReady();
+        if (partController != null) {
             partController.recalculateEnergyUsage();
-        });
+        }
     }
 
     @Override
